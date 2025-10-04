@@ -4,6 +4,7 @@ use winit::application::ApplicationHandler;
 use anyhow::Result;
 
 mod screenshot;
+mod terminal;
 
 struct App {
     receiver: crossbeam_channel::Receiver<GlobalHotKeyEvent>,
@@ -26,6 +27,9 @@ impl ApplicationHandler for App {
         if let Ok(event) = self.receiver.try_recv() {
             if event.state == global_hotkey::HotKeyState::Pressed {
                 println!("Hotkey pressed! Taking screenshot...");
+                if let Err(err) = handle_screenshot() {
+                    eprintln!("Error: {}", err);
+                }
             }
         }
     }
@@ -42,5 +46,14 @@ fn main() -> Result<()> {
     
     event_loop.run_app(&mut app)?;
     
+    Ok(())
+}
+
+fn handle_screenshot() -> Result<()> {
+    let screenshot_path = screenshot::capture()?;
+    println!("✅ Screenshot saved to: {}", screenshot_path);
+    let message = screenshot_path + "Analyze this image";
+    terminal::send_to_claude_code_terminal(&message)?;
+
     Ok(())
 }

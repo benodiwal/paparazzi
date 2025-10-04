@@ -5,7 +5,9 @@ edition = "2024"
 
 [dependencies]
 anyhow = "1.0.100"
+clap = { version = "4.5.48", features = ["derive"] }
 crossbeam-channel = "0.5.15"
+enigo = "0.6.1"
 global-hotkey = "0.7.0"
 screenshots = "0.8.10"
 tempfile = "3.23.0"
