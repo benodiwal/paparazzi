@@ -1,4 +1,4 @@
-use anyhow::{Context, Result};
+use anyhow::Result;
 use std::process::Command;
 
 #[cfg(target_os = "macos")]
@@ -14,7 +14,7 @@ pub fn send_to_claude_code_terminal(message: &str) -> Result<()> {
         if let Ok(tty) = find_terminal_for_process(pid) {
             println!("TTY: {}", tty);
 
-            // Try different terminal emulators
+            // Trying different terminal emulators
             if send_to_ghostty(&tty, message).is_ok() {
                 println!("✅ Sent via Ghostty");
                 return Ok(());
@@ -76,7 +76,7 @@ fn find_terminal_for_process(pid: i32) -> Result<String> {
 
 // Ghostty
 #[cfg(target_os = "macos")]
-fn send_to_ghostty(tty: &str, message: &str) -> Result<()> {
+fn send_to_ghostty(_tty: &str, message: &str) -> Result<()> {
     let escaped = message.replace("\\", "\\\\").replace("\"", "\\\"");
 
     let script = format!(
@@ -151,7 +151,7 @@ fn send_to_terminal_app(tty: &str, message: &str) -> Result<()> {
 
 // iTerm2
 #[cfg(target_os = "macos")]
-fn send_to_iterm2(tty: &str, message: &str) -> Result<()> {
+fn send_to_iterm2(_tty: &str, message: &str) -> Result<()> {
     let escaped = message.replace("\\", "\\\\").replace("\"", "\\\"");
 
     let script = format!(
