@@ -69,6 +69,7 @@ fn main() -> Result<()> {
         Some(Commands::Logs) => {
             show_logs()?;
         }
+        Some(Commands::Attach { follow }) => daemon.attach(follow)?,
         Some(Commands::Hotkeys {
             modifiers,
             key,

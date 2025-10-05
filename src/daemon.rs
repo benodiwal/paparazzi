@@ -81,6 +81,38 @@ impl Daemon {
         Ok(())
     }
 
+    pub fn attach(&self, follow: bool) -> Result<()> {
+        if !self.is_running()? {
+            anyhow::bail!("No daemon is running. Start it with: clipse run --background");
+        }
+
+        let log_path = get_log_file_path();
+
+        if follow {
+            #[cfg(unix)]
+            {
+                use std::process::Command;
+
+                let status = Command::new("tail").arg("-f").arg(&log_path).status()?;
+
+                if !status.success() {
+                    anyhow::bail!("Failed to follow logs");
+                }
+            }
+
+            // TODO: Non Unix support
+        } else {
+            if log_path.exists() {
+                let logs = std::fs::read_to_string(&log_path)?;
+                println!("{}", logs);
+            } else {
+                println!("No logs yet.");
+            }
+        }
+
+        Ok(())
+    }
+
     pub fn is_running(&self) -> Result<bool> {
         let pid = match read_pid_file() {
             Ok(pid) => pid,

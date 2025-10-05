@@ -28,6 +28,11 @@ pub enum Commands {
     Status,
     /// View daemon logs
     Logs,
+    /// Attach to running daemon (bring to foreground)
+    Attach {
+        #[arg(short, long)]
+        follow: bool,
+    },
     /// Configure hotkeys for taking screenshots
     Hotkeys {
         /// Set the modifier keys (e.g., "ctrl+shift", "cmd+alt")
