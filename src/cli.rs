@@ -1,5 +1,8 @@
 use clap::{Parser, Subcommand};
 use global_hotkey::hotkey::{Code, Modifiers};
+use std::fs;
+use std::path::PathBuf;
+use serde::{Deserialize, Serialize};
 
 #[derive(Parser)]
 #[command(name = "clipse")]
@@ -13,11 +16,18 @@ pub struct Cli {
 
 #[derive(Subcommand)]
 pub enum Commands {
+    /// Start the screenshot service
     Run {
-        /// Run in background mode
+        /// Run as background daemon
         #[arg(short, long)]
         background: bool,
     },
+    /// Stop the background daemon
+    Stop,
+    /// Check daemon status
+    Status,
+    /// View daemon logs
+    Logs,
     /// Configure hotkeys for taking screenshots
     Hotkeys {
         /// Set the modifier keys (e.g., "ctrl+shift", "cmd+alt")
@@ -34,44 +44,75 @@ pub enum Commands {
     Version,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct HotkeyConfig {
-    pub modifiers: Modifiers,
-    pub key: Code,
+    pub modifiers: String,
+    pub key: String,
+    
+    #[serde(skip)]
+    pub modifiers_parsed: Option<Modifiers>,
+    #[serde(skip)]
+    pub key_parsed: Option<Code>,
 }
 
 impl Default for HotkeyConfig {
     fn default() -> Self {
         HotkeyConfig {
-            modifiers: Modifiers::CONTROL | Modifiers::SHIFT,
-            key: Code::KeyS,
+            modifiers: "ctrl+shift".to_string(),
+            key: "s".to_string(),
+            modifiers_parsed: Some(Modifiers::CONTROL | Modifiers::SHIFT),
+            key_parsed: Some(Code::KeyS),
         }
     }
 }
 
 impl HotkeyConfig {
     pub fn from_strings(modifiers_str: &str, key_str: &str) -> Result<Self, String> {
-        let modifiers = parse_modifiers(modifiers_str)?;
-        let key = parse_key(key_str)?;
-        Ok(HotkeyConfig { modifiers, key })
+        let modifiers_parsed = parse_modifiers(modifiers_str)?;
+        let key_parsed = parse_key(key_str)?;
+        
+        Ok(HotkeyConfig {
+            modifiers: modifiers_str.to_string(),
+            key: key_str.to_string(),
+            modifiers_parsed: Some(modifiers_parsed),
+            key_parsed: Some(key_parsed),
+        })
+    }
+
+    pub fn parse(&mut self) -> Result<(), String> {
+        self.modifiers_parsed = Some(parse_modifiers(&self.modifiers)?);
+        self.key_parsed = Some(parse_key(&self.key)?);
+        Ok(())
     }
 
     pub fn to_string(&self) -> String {
-        let mut mods = Vec::new();
-        if self.modifiers.contains(Modifiers::CONTROL) {
-            mods.push("Ctrl");
-        }
-        if self.modifiers.contains(Modifiers::SHIFT) {
-            mods.push("Shift");
-        }
-        if self.modifiers.contains(Modifiers::ALT) {
-            mods.push("Alt");
-        }
-        if self.modifiers.contains(Modifiers::SUPER) {
-            mods.push("Cmd/Super");
-        }
+        if let (Some(mods), Some(key)) = (&self.modifiers_parsed, &self.key_parsed) {
+            let mut mod_names = Vec::new();
+            if mods.contains(Modifiers::CONTROL) {
+                mod_names.push("Ctrl");
+            }
+            if mods.contains(Modifiers::SHIFT) {
+                mod_names.push("Shift");
+            }
+            if mods.contains(Modifiers::ALT) {
+                mod_names.push("Alt");
+            }
+            if mods.contains(Modifiers::SUPER) {
+                mod_names.push("Cmd/Super");
+            }
 
-        format!("{} + {}", mods.join(" + "), format_key(&self.key))
+            format!("{} + {}", mod_names.join(" + "), format_key(key))
+        } else {
+            format!("{} + {}", self.modifiers, self.key)
+        }
+    }
+
+    pub fn modifiers(&self) -> Modifiers {
+        self.modifiers_parsed.unwrap_or(Modifiers::CONTROL | Modifiers::SHIFT)
+    }
+
+    pub fn key(&self) -> Code {
+        self.key_parsed.unwrap_or(Code::KeyS)
     }
 }
 
@@ -189,15 +230,38 @@ fn format_key(code: &Code) -> String {
     }.to_string()
 }
 
+fn get_config_path() -> PathBuf {
+    let config_dir = dirs::config_dir()
+        .unwrap_or_else(|| PathBuf::from("."))
+        .join("paparazzi");
+    
+    fs::create_dir_all(&config_dir).ok();
+    config_dir.join("config.json")
+}
+
 pub fn save_hotkey_config(config: &HotkeyConfig) -> Result<(), String> {
-    // For now, we'll just print the config
-    // In a real implementation, you'd save this to a config file
-    println!("💾 Hotkey configuration would be saved: {}", config.to_string());
+    let config_path = get_config_path();
+    let json = serde_json::to_string_pretty(config)
+        .map_err(|e| format!("Failed to serialize config: {}", e))?;
+    
+    fs::write(&config_path, json)
+        .map_err(|e| format!("Failed to write config file: {}", e))?;
+    
     Ok(())
 }
 
 pub fn load_hotkey_config() -> HotkeyConfig {
-    // For now, return default config
-    // In a real implementation, you'd load from a config file
+    let config_path = get_config_path();
+    
+    if config_path.exists() {
+        if let Ok(contents) = fs::read_to_string(&config_path) {
+            if let Ok(mut config) = serde_json::from_str::<HotkeyConfig>(&contents) {
+                if config.parse().is_ok() {
+                    return config;
+                }
+            }
+        }
+    }
+    
     HotkeyConfig::default()
 }

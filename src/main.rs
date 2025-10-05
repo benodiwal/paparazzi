@@ -1,14 +1,16 @@
 use anyhow::Result;
 use clap::Parser;
+use cli::{Cli, Commands, HotkeyConfig};
+use daemon::show_logs;
 use global_hotkey::{GlobalHotKeyEvent, GlobalHotKeyManager, hotkey::HotKey};
 use winit::application::ApplicationHandler;
 use winit::event_loop::{ControlFlow, EventLoop};
 
 mod cli;
+mod constants;
+mod daemon;
 mod screenshot;
 mod terminal;
-
-use cli::{Cli, Commands, HotkeyConfig};
 
 struct App {
     receiver: crossbeam_channel::Receiver<GlobalHotKeyEvent>,
@@ -34,9 +36,9 @@ impl ApplicationHandler for App {
 
         if let Ok(event) = self.receiver.try_recv() {
             if event.state == global_hotkey::HotKeyState::Pressed {
-                println!("🔥 Hotkey pressed! Taking screenshot...");
+                println!("Hotkey pressed! Taking screenshot...");
                 if let Err(err) = handle_screenshot() {
-                    eprintln!("❌ Error: {}", err);
+                    eprintln!("Error: {}", err);
                 }
             }
         }
@@ -45,17 +47,34 @@ impl ApplicationHandler for App {
 
 fn main() -> Result<()> {
     let cli = Cli::parse();
+    let daemon = daemon::Daemon::new();
 
     match cli.command {
         Some(Commands::Run { background }) => {
-            run_service(background)?;
+            if background {
+                daemon.start()?;
+                // After daemonization, run the service
+                run_service_internal()?;
+            } else {
+                // Foreground mode
+                run_service_internal()?;
+            }
+        }
+        Some(Commands::Stop) => {
+            daemon.stop()?;
+        }
+        Some(Commands::Status) => {
+            daemon.status()?;
+        }
+        Some(Commands::Logs) => {
+            show_logs()?;
         }
         Some(Commands::Hotkeys {
             modifiers,
             key,
             list,
         }) => {
-            handle_hotkeys_command(modifiers, key, list)?;
+            handle_hotkeys_command(modifiers, key, list, &daemon)?;
         }
         Some(Commands::Version) => {
             print_version();
@@ -68,35 +87,64 @@ fn main() -> Result<()> {
     Ok(())
 }
 
-fn run_service(background: bool) -> Result<()> {
-    if background {
-        println!("Starting Clipse in background mode...");
-    } else {
-        println!("Starting Clipse...");
-    }
+fn run_service_internal() -> Result<()> {
+    let mut config = cli::load_hotkey_config();
+    config
+        .parse()
+        .map_err(|e| anyhow::anyhow!("Failed to parse hotkey config: {}", e))?;
 
-    let config = cli::load_hotkey_config();
+    #[cfg(unix)]
+    setup_signal_handler();
+
     println!("Using hotkey: {}", config.to_string());
     println!("Press {} to take a screenshot", config.to_string());
     println!("Press Ctrl+C to exit\n");
 
     let event_loop = EventLoop::new()?;
     let manager = GlobalHotKeyManager::new()?;
-    let hotkey = HotKey::new(Some(config.modifiers), config.key);
-    manager.register(hotkey)?;
-    let receiver = GlobalHotKeyEvent::receiver().to_owned();
+    let hotkey = HotKey::new(Some(config.modifiers()), config.key());
 
+    manager.register(hotkey)?;
+    println!("Hotkey registered successfully");
+
+    let receiver = GlobalHotKeyEvent::receiver().to_owned();
     let mut app = App { receiver };
 
+    println!("Service is running...\n");
     event_loop.run_app(&mut app)?;
 
+    // Cleanup
+    manager.unregister(hotkey)?;
+    println!("\nService stopped");
+
     Ok(())
+}
+
+#[cfg(unix)]
+fn setup_signal_handler() {
+    use signal_hook::{consts::SIGTERM, iterator::Signals};
+    use std::thread;
+
+    let mut signals = Signals::new(&[SIGTERM]).unwrap();
+
+    thread::spawn(move || {
+        for sig in signals.forever() {
+            match sig {
+                SIGTERM => {
+                    println!("\nReceived SIGTERM, shutting down gracefully...");
+                    std::process::exit(0);
+                }
+                _ => {}
+            }
+        }
+    });
 }
 
 fn handle_hotkeys_command(
     modifiers: Option<String>,
     key: Option<String>,
     list: bool,
+    daemon: &daemon::Daemon,
 ) -> Result<()> {
     if list {
         let config = cli::load_hotkey_config();
@@ -111,7 +159,15 @@ fn handle_hotkeys_command(
                 cli::save_hotkey_config(&config).map_err(|e| anyhow::anyhow!(e))?;
                 println!("Hotkey configuration updated!");
                 println!("   New hotkey: {}", config.to_string());
-                println!("\n Run 'clipse run' to start with the new hotkey");
+
+                if daemon.is_running()? {
+                    println!("\nDaemon is currently running with old hotkey");
+                    println!("   Restart it to apply changes:");
+                    println!("   $ clipse stop");
+                    println!("   $ clipse run --background");
+                } else {
+                    println!("\nRun 'clipse run --background' to start with the new hotkey");
+                }
             }
             Err(e) => {
                 eprintln!("Invalid hotkey configuration: {}", e);
@@ -122,7 +178,7 @@ fn handle_hotkeys_command(
         }
     } else {
         println!("Hotkey Configuration");
-        println!("\n");
+        println!();
         println!("Current hotkey: {}", cli::load_hotkey_config().to_string());
         println!();
         println!("To change the hotkey:");
@@ -138,7 +194,7 @@ fn handle_hotkeys_command(
         println!();
         println!("Available keys:");
         println!("  a-z, 0-9, space, enter, tab, escape");
-        println!("\n Bye :) \n");
+        println!("\nBye :)\n");
     }
 
     Ok(())
@@ -148,68 +204,51 @@ fn print_version() {
     println!("clipse {}", env!("CARGO_PKG_VERSION"));
     println!("A CLI tool for instant screenshots to Claude Code");
     println!();
-    println!("Built with Rust :)\n");
+    println!("Built with Rust 🦀\n");
 }
 
 fn print_intro() {
-    println!("\n\n Clipse - Instant Screenshots to Claude Code");
-    println!();
-    println!(
-        "................. ...  ..............................  ....  ..........
-...................::................................:-+++=-. .........
-.............. .::.-:.::........................... -*%@@@%%+. ........
-.............. .:..-:.::........................... =%%@@@@%*: ........
-......  ........:::::::..............................=*%%%%+-...  .....
-......:-----------====--------------------------------=+++==-----. ....
-.... :+:.......::::::::........::::::::::.........:-------.....:=+.....
-.... -+........:.    .:....:-------::------::.....-%@@@@%*:.....:*. ...
-.... -+........::.....:.:-=-:..............:-=-:..-+*****+:.....:*. ...
-.... -+...............:==:. ..:..........:.. .-=-...............:*. ...
-.... -+..............-=:  ::....:::::::....::. .-=:........:::..:*. ...
-.... -+.............==. .:...:-::::..::::::..::  :+:.......:::..:*. ...
-.... -+............-+. .:. .::::::::--....:-. .:  -+.......:::..:*. ...
-.... -+............+-  :. .-:::::::+*:.....--  :. .+-......:::..:*. ...
-.... -+............+:  -. :-.::::::-*+-:...:-. ::  +-......:::..:*. ...
-.... -+............+-  -. .-.......=%+:....:-  :.  +-......:::..:*. ...
-.... -+............-+. .:. :-:....-=:.....:-. .:  -+.......:::..:*. ...
-.... -+.............==. .:...::::::....::::..::  :+:.......:::..:*. ...
-.... -+..............-=: .::....::::::::....:. .-=:........:::..:*. ...
-.... -+...............:=-:  ..:..........:.. .:=-...............:*. ...
-.... :+-::::::::::::::::-==-:..............-===:::::::::::::::::==.....
-..... .--------------------==-----::::-----==-------------------:. ....
-......                       .....:::.....                       ......
-................................        .............................."
-    );
+    println!("\nClipse - Instant Screenshots to Claude Code");
     println!();
     println!("USAGE:");
     println!("  clipse [COMMAND]");
     println!();
     println!("COMMANDS:");
     println!("  run       Start the screenshot service");
+    println!("    --background, -b    Run as background daemon");
+    println!("  stop      Stop the background daemon");
+    println!("  status    Check daemon status");
+    println!("  logs      View daemon logs");
     println!("  hotkeys   Configure keyboard shortcuts");
     println!("  version   Display version information");
     println!("  help      Display this help message");
     println!();
     println!("QUICK START:");
-    println!("  1. Run 'clipse run' to start the service");
+    println!("  1. Run 'clipse run --background' to start the daemon");
     println!("  2. Press the configured hotkey to take a screenshot");
     println!("  3. The screenshot will be sent to Claude Code");
     println!();
     println!("EXAMPLES:");
-    println!("  clipse run                                    # Start the service");
-    println!("  clipse run --background                       # Start in background");
+    println!("  clipse run                                    # Run in foreground");
+    println!("  clipse run --background                       # Run as daemon");
+    println!("  clipse stop                                   # Stop daemon");
+    println!("  clipse status                                 # Check daemon status");
+    println!("  clipse logs                                   # View daemon logs");
     println!("  clipse hotkeys --list                         # Show current hotkey");
     println!("  clipse hotkeys --modifiers \"ctrl+shift\" --key s  # Set new hotkey");
     println!();
     println!("For more information, visit: https://github.com/benodiwal/paparazzi");
-    println!("\n Bye :) \n");
+    println!("\n Bye :)\n");
 }
 
 fn handle_screenshot() -> Result<()> {
     let screenshot_path = screenshot::capture()?;
     println!("Screenshot saved to: {}", screenshot_path);
-    let message = screenshot_path + "Analyze this image";
+
+    let message = format!("{} Analyze this image", screenshot_path);
     terminal::send_to_claude_code_terminal(&message)?;
+
+    println!("Sent to Claude Code!");
 
     Ok(())
 }
