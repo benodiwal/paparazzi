@@ -84,62 +84,20 @@ fn find_terminal_for_process(pid: i32) -> Result<String> {
 // iTerm2 - Find and switch to Claude Code tab
 #[cfg(target_os = "macos")]
 fn send_to_iterm2_claude_tab(message: &str) -> Result<()> {
-    let escaped = message.replace("\\", "\\\\").replace("\"", "\\\"");
+    let script_path = "macos/applescripts/iterm2_send.applescript";
 
-    let script = format!(
-        r#"
-        tell application "iTerm"
-            set foundSession to false
+    let output = Command::new("osascript")
+        .arg(script_path)
+        .arg(message)
+        .output()?;
 
-            -- Loop through all windows
-            repeat with w in windows
-                -- Loop through all tabs in the window
-                repeat with t in tabs of w
-                    -- Loop through all sessions in the tab
-                    repeat with s in sessions of t
-                        -- Get the session content
-                        set sessionText to contents of s
-
-                        -- Check if this session contains Claude Code indicators
-                        if sessionText contains "claude" or sessionText contains "Claude" then
-                            -- Switch to this window
-                            select w
-                            -- Switch to this tab
-                            select t
-                            -- Switch to this session
-                            select s
-                            -- Send the text
-                            tell s to write text "{}"
-                            set foundSession to true
-                            exit repeat
-                        end if
-                    end repeat
-                    if foundSession then exit repeat
-                end repeat
-                if foundSession then exit repeat
-            end repeat
-
-            if foundSession then
-                activate
-                return true
-            else
-                return false
-            end if
-        end tell
-        "#,
-        escaped
-    );
-
-    let output = Command::new("osascript").arg("-e").arg(&script).output()?;
-
-    // Check if the command executed successfully
     if !output.status.success() {
         let error = String::from_utf8_lossy(&output.stderr);
-        // If iTerm2 is not installed or not running, this will fail
         return Err(anyhow::anyhow!("iTerm2 not available or error: {}", error));
     }
 
-    let result = String::from_utf8_lossy(&output.stdout).trim().to_string();
+    let stdout = String::from_utf8_lossy(&output.stdout);
+    let result = stdout.trim();
 
     if result == "false" {
         return Err(anyhow::anyhow!("Claude Code tab not found in iTerm2"));
@@ -151,55 +109,20 @@ fn send_to_iterm2_claude_tab(message: &str) -> Result<()> {
 // Terminal.app - Find and switch to Claude Code tab
 #[cfg(target_os = "macos")]
 fn send_to_terminal_app_claude_tab(message: &str) -> Result<()> {
-    let escaped = message.replace("\\", "\\\\").replace("\"", "\\\"");
+    let script_path = "macos/applescripts/terminal_send.applescript";
 
-    // AppleScript to find and switch to Claude Code tab in Terminal.app
-    let script = format!(
-        r#"
-        tell application "Terminal"
-            set foundTab to false
+    let output = Command::new("osascript")
+        .arg(script_path)
+        .arg(message)
+        .output()?;
 
-            -- Loop through all windows
-            repeat with w in windows
-                -- Loop through all tabs in the window
-                repeat with t in tabs of w
-                    -- Get the tab's processes
-                    set tabProcesses to processes of t
-
-                    -- Check if any process contains "claude"
-                    repeat with p in tabProcesses
-                        if p contains "claude" or p contains "Claude" then
-                            -- Switch to this window and tab
-                            set frontmost of w to true
-                            set selected of t to true
-                            activate
-
-                            -- Send the text
-                            do script "{}" in t
-                            set foundTab to true
-                            exit repeat
-                        end if
-                    end repeat
-                    if foundTab then exit repeat
-                end repeat
-                if foundTab then exit repeat
-            end repeat
-
-            return foundTab
-        end tell
-        "#,
-        escaped
-    );
-
-    let output = Command::new("osascript").arg("-e").arg(&script).output()?;
-
-    // Check if the command executed successfully
     if !output.status.success() {
         let error = String::from_utf8_lossy(&output.stderr);
         return Err(anyhow::anyhow!("Terminal.app error: {}", error));
     }
 
-    let result = String::from_utf8_lossy(&output.stdout).trim().to_string();
+    let stdout = String::from_utf8_lossy(&output.stdout);
+    let result = stdout.trim();
 
     if result == "false" {
         return Err(anyhow::anyhow!("Claude Code tab not found in Terminal.app"));
@@ -214,61 +137,25 @@ fn send_to_ghostty_claude_tab(message: &str) -> Result<()> {
     // Get Claude Code PIDs to identify the right terminal
     let claude_pids = find_claude_code_processes()?;
 
-    // First, copy the message to clipboard using pbcopy
-    let mut pbcopy = Command::new("pbcopy")
-        .stdin(std::process::Stdio::piped())
-        .spawn()?;
-
-    if let Some(stdin) = pbcopy.stdin.take() {
-        use std::io::Write;
-        let mut stdin = stdin;
-        stdin.write_all(message.as_bytes())?;
-    }
-
-    pbcopy.wait()?;
-
     // Check if any of the Claude processes are running in Ghostty
     for pid in &claude_pids {
         if let Ok(terminal_name) = get_terminal_name_for_process(*pid) {
             if terminal_name.to_lowercase().contains("ghostty") {
-                // Found Claude running in Ghostty, proceed with the paste
-                let script = r#"
-                    tell application "System Events"
-                        tell process "Ghostty"
-                            set frontmost to true
+                // Found Claude running in Ghostty, proceed with the script
+                let script_path = "macos/applescripts/ghostty_send.applescript";
 
-                            -- Look for windows
-                            set windowList to windows
-                            if (count of windowList) > 0 then
-                                -- Focus the first/current window (assuming it's the active one)
-                                set targetWindow to item 1 of windowList
-                                perform action "AXRaise" of targetWindow
-                                set focused of targetWindow to true
-
-                                -- Wait a moment for focus
-                                delay 0.3
-
-                                -- Paste the content using Cmd+V
-                                key code 9 using command down
-
-                                -- Press return
-                                delay 0.1
-                                key code 36
-                                return true
-                            end if
-                        end tell
-                    end tell
-                    return false
-                    "#;
-
-                let output = Command::new("osascript").arg("-e").arg(&script).output()?;
+                let output = Command::new("osascript")
+                    .arg(script_path)
+                    .arg(message)
+                    .output()?;
 
                 if !output.status.success() {
                     let error = String::from_utf8_lossy(&output.stderr);
                     return Err(anyhow::anyhow!("Ghostty automation error: {}", error));
                 }
 
-                let result = String::from_utf8_lossy(&output.stdout).trim().to_string();
+                let stdout = String::from_utf8_lossy(&output.stdout);
+                let result = stdout.trim();
 
                 if result == "true" {
                     return Ok(());
@@ -310,45 +197,21 @@ fn get_terminal_name_for_process(pid: i32) -> Result<String> {
 // Terminal.app
 #[cfg(target_os = "macos")]
 fn send_to_terminal_app_by_tty(tty: &str, message: &str) -> Result<()> {
-    let escaped = message.replace("\\", "\\\\").replace("\"", "\\\"");
+    let script_path = "macos/applescripts/terminal_tty_send.applescript";
 
-    let script = format!(
-        r#"
-        tell application "Terminal"
-            set foundTab to false
-
-            repeat with w in windows
-                repeat with t in tabs of w
-                    set currentTTY to tty of t
-
-                    if currentTTY is equal to "{}" then
-                        set selected of t to true
-                        set frontmost of w to true
-                        activate
-
-                        do script "{}" in t
-                        set foundTab to true
-                        exit repeat
-                    end if
-                end repeat
-
-                if foundTab then exit repeat
-            end repeat
-
-            return foundTab
-        end tell
-        "#,
-        tty, escaped
-    );
-
-    let output = Command::new("osascript").arg("-e").arg(&script).output()?;
+    let output = Command::new("osascript")
+        .arg(script_path)
+        .arg(tty)
+        .arg(message)
+        .output()?;
 
     if !output.status.success() {
         let error = String::from_utf8_lossy(&output.stderr);
         return Err(anyhow::anyhow!("Terminal.app TTY error: {}", error));
     }
 
-    let result = String::from_utf8_lossy(&output.stdout).trim().to_string();
+    let stdout = String::from_utf8_lossy(&output.stdout);
+    let result = stdout.trim();
 
     if result == "false" {
         return Err(anyhow::anyhow!("TTY not found in Terminal.app"));
