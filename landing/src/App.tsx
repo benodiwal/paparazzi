@@ -257,7 +257,7 @@ function App() {
   const links = [
     {
       title: 'github',
-      href: 'https://github.com/benodiwal/clipse',
+      href: 'https://github.com/benodiwal',
       description: 'source code, issues, pull requests welcome'
     },
     {
@@ -348,7 +348,7 @@ function App() {
         <Link to="/docs" className="nav-link">docs</Link>
         <Link to="/blogs" className="nav-link">blogs</Link>
         <NavLink href="#install">install</NavLink>
-        <NavLink href="https://github.com/benodiwal/paparazzi">github</NavLink>
+        <NavLink href="https://github.com/benodiwal">github</NavLink>
         <div className="shortcuts" onClick={() => setIsSearchOpen(true)}>
           <span className="shortcut">⌘</span>
           <span className="shortcut">K</span>
