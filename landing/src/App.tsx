@@ -57,6 +57,72 @@ interface SearchModalProps {
   searchableContent: SearchResult[]
 }
 
+const AnimatedCommands = () => {
+  const [currentIndex, setCurrentIndex] = useState(0)
+  const [displayText, setDisplayText] = useState('')
+  const [showCursor, setShowCursor] = useState(true)
+
+  useEffect(() => {
+    const commands = [
+      'paparazzi run',
+      'paparazzi run --background',
+      'paparazzi hotkeys --list',
+      'paparazzi hotkeys --modifiers "ctrl+shift" --key s',
+      'paparazzi version',
+      'paparazzi help',
+      'brew install paparazzi'
+    ]
+
+    let charIndex = 0
+    let typingTimer: ReturnType<typeof setTimeout>
+    let cycleTimer: ReturnType<typeof setTimeout>
+
+    const typeCommand = () => {
+      const currentCommand = commands[currentIndex]
+
+      if (charIndex <= currentCommand.length) {
+        setDisplayText(currentCommand.substring(0, charIndex))
+        charIndex++
+        typingTimer = setTimeout(typeCommand, 50 + Math.random() * 30)
+      } else {
+        cycleTimer = setTimeout(() => {
+          setDisplayText('')
+          charIndex = 0
+          setCurrentIndex((prev) => (prev + 1) % commands.length)
+        }, 2000)
+      }
+    }
+
+    typeCommand()
+
+    return () => {
+      clearTimeout(typingTimer)
+      clearTimeout(cycleTimer)
+    }
+  }, [currentIndex])
+
+  useEffect(() => {
+    const cursorInterval = setInterval(() => {
+      setShowCursor(prev => !prev)
+    }, 530)
+
+    return () => clearInterval(cursorInterval)
+  }, [])
+
+  return (
+    <div className="status" style={{
+      minHeight: '1.5em',
+      fontFamily: 'monospace'
+    }}>
+      $ {displayText}
+      <span style={{
+        opacity: showCursor ? 1 : 0,
+        transition: 'opacity 0.1s'
+      }}>_</span>
+    </div>
+  )
+}
+
 const SearchModal = ({ isOpen, onClose, searchableContent }: SearchModalProps) => {
   const [searchTerm, setSearchTerm] = useState('')
   const [results, setResults] = useState<SearchResult[]>([])
@@ -129,7 +195,6 @@ const SearchModal = ({ isOpen, onClose, searchableContent }: SearchModalProps) =
 }
 
 function App() {
-  const [status] = useState('checking status...')
   const [isSearchOpen, setIsSearchOpen] = useState(false)
 
   const asciiArt = `
@@ -211,54 +276,6 @@ function App() {
       href: '#home'
     },
     {
-      title: 'Installation - Homebrew',
-      content: 'brew install paparazzi',
-      section: 'Installation',
-      href: '#install'
-    },
-    {
-      title: 'Installation - From Source',
-      content: 'git clone https://github.com/benodiwal/paparazzi.git',
-      section: 'Installation',
-      href: '#install'
-    },
-    {
-      title: 'Usage - Start Service',
-      content: 'paparazzi run - starts the hotkey listener service',
-      section: 'Usage',
-      href: '#docs'
-    },
-    {
-      title: 'Usage - Background Mode',
-      content: 'paparazzi run --background - runs the service in background mode',
-      section: 'Usage',
-      href: '#docs'
-    },
-    {
-      title: 'Usage - Configure Hotkeys',
-      content: 'paparazzi hotkeys --modifiers "ctrl+shift" --key s - set custom keyboard shortcuts',
-      section: 'Usage',
-      href: '#docs'
-    },
-    {
-      title: 'Usage - View Configuration',
-      content: 'paparazzi hotkeys --list - show current hotkey settings',
-      section: 'Usage',
-      href: '#docs'
-    },
-    {
-      title: 'Usage - Version',
-      content: 'paparazzi version - display version information',
-      section: 'Usage',
-      href: '#docs'
-    },
-    {
-      title: 'Usage - Help',
-      content: 'paparazzi help - show help information',
-      section: 'Usage',
-      href: '#docs'
-    },
-    {
       title: 'How it Works',
       content: 'paparazzi hooks into macos native screenshot apis and communicates directly with claude code stdin',
       section: 'Documentation',
@@ -320,6 +337,12 @@ function App() {
 
   return (
     <div className="container">
+      <div className="coming-soon-banner">
+        <div className="banner-content">
+          <span className="banner-text">coming soon</span>
+        </div>
+      </div>
+
       <nav>
         <NavLink href="#home">home</NavLink>
         <Link to="/docs" className="nav-link">docs</Link>
@@ -339,7 +362,7 @@ function App() {
           <h1>paparazzi</h1>
           <p>macos</p>
           <p>cli tool for developers</p>
-          <div className="status">$ {status}</div>
+          <AnimatedCommands />
           <div className="description">
             screenshot directly to claude code. no manual pasting, no context switching,
             no friction. built for developers who value speed.
@@ -351,7 +374,10 @@ function App() {
         <div className="left-column">
           <h1 id="install">installation</h1>
 
-          <div className="section">
+          <div className="section blurred-section">
+            {/* Good try mate! 🕵️ But the CLI tool isn't ready yet. */}
+            {/* The real installation instructions will be here soon: */}
+            {/*
             <Item
               title="homebrew"
               description={<code>brew install paparazzi</code>}
@@ -365,11 +391,19 @@ function App() {
                 </code>
               }
             />
+            */}
+            <div className="placeholder-content">
+              <p>Coming soon! 🚧</p>
+              <p>We're putting the finishing touches on the CLI tool.</p>
+            </div>
           </div>
 
           <h1 id="docs">usage</h1>
 
-          <div className="section">
+          <div className="section blurred-section">
+            {/* Nice try! 👀 But these commands don't work yet. */}
+            {/* The real usage docs will be here when we launch: */}
+            {/*
             <Item
               title="start service"
               description={
@@ -417,6 +451,11 @@ function App() {
                 </>
               }
             />
+            */}
+            <div className="placeholder-content">
+              <p>Documentation coming soon! 📚</p>
+              <p>The CLI tool is in active development.</p>
+            </div>
           </div>
 
           <h1>how it works</h1>

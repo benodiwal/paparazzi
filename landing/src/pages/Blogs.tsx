@@ -5,48 +5,12 @@ function Blogs() {
   const blogPosts = [
     {
       id: 1,
-      title: "Building Paparazzi: From Idea to CLI Tool",
-      date: "2025-01-15",
+      title: "Building Paparazzi: Solving the Daemon Problem",
+      date: "2025-10-05",
       author: "Sachin Beniwal",
-      excerpt: "The journey of creating a Rust-based screenshot tool that integrates seamlessly with Claude Code. From initial conception to the first working prototype.",
-      tags: ["rust", "cli", "development"],
-      readTime: "5 min read"
-    },
-    {
-      id: 2,
-      title: "Why Global Hotkeys Matter for Developer Productivity",
-      date: "2025-01-10",
-      author: "Sachin Beniwal",
-      excerpt: "Exploring the importance of frictionless screenshot capture in modern development workflows and how global hotkeys eliminate context switching.",
-      tags: ["productivity", "ux", "developer-tools"],
-      readTime: "3 min read"
-    },
-    {
-      id: 3,
-      title: "Deep Dive: macOS Core Graphics and Screenshot APIs",
-      date: "2025-01-05",
-      author: "Sachin Beniwal",
-      excerpt: "Technical exploration of macOS native screenshot capabilities and how Paparazzi leverages Core Graphics for optimal performance.",
-      tags: ["macos", "core-graphics", "api"],
-      readTime: "8 min read"
-    },
-    {
-      id: 4,
-      title: "The Art of Zero-Friction Developer Tools",
-      date: "2024-12-28",
-      author: "Sachin Beniwal",
-      excerpt: "What makes a developer tool truly frictionless? Lessons learned from building tools that get out of your way and let you focus on what matters.",
-      tags: ["developer-experience", "tools", "design"],
-      readTime: "6 min read"
-    },
-    {
-      id: 5,
-      title: "Rust + Claude Code: A Perfect Match",
-      date: "2024-12-20",
-      author: "Sachin Beniwal",
-      excerpt: "Why Rust was the perfect choice for building Paparazzi and how it integrates beautifully with Claude Code's workflow.",
-      tags: ["rust", "claude-code", "integration"],
-      readTime: "4 min read"
+      excerpt: "How I built a screenshot tool that runs in the background and learned to tame daemon mode along the way. A deep dive into process management, signal handling, and creating reusable abstractions for CLI tools.",
+      tags: ["rust", "daemon", "cli", "unix"],
+      readTime: "12 min read"
     }
   ]
 
@@ -109,34 +73,6 @@ function Blogs() {
           </p>
         </section>
 
-        <section className="featured-topics">
-          <h2>Explore Topics</h2>
-          <div className="topics-grid">
-            <div className="topic-card">
-              <h3>Rust Development</h3>
-              <p>Deep dives into Rust programming, system integration, and performance optimization</p>
-              <span className="topic-count">3 articles</span>
-            </div>
-
-            <div className="topic-card">
-              <h3>Developer Productivity</h3>
-              <p>Tools, workflows, and techniques for maximizing developer efficiency</p>
-              <span className="topic-count">2 articles</span>
-            </div>
-
-            <div className="topic-card">
-              <h3>macOS Integration</h3>
-              <p>Native macOS development, APIs, and system-level programming</p>
-              <span className="topic-count">1 article</span>
-            </div>
-
-            <div className="topic-card">
-              <h3>CLI Design</h3>
-              <p>Building intuitive command-line interfaces and developer experiences</p>
-              <span className="topic-count">2 articles</span>
-            </div>
-          </div>
-        </section>
       </div>
     </div>
   )

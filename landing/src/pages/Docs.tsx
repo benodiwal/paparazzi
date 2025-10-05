@@ -16,6 +16,12 @@ function Docs() {
         </header>
 
         <div className="docs-sections">
+          <div className="coming-soon-docs">
+            <h2>Coming Soon</h2>
+            <p>Full documentation will be available when the CLI tool is released.</p>
+          </div>
+
+          {/*
           <section className="docs-section">
             <h2 id="getting-started">Getting Started</h2>
             <p>Paparazzi is a lightweight CLI tool that captures screenshots and sends them directly to Claude Code with zero friction.</p>
@@ -195,6 +201,7 @@ function Docs() {
               <p>Show help information</p>
             </div>
           </section>
+          */}
         </div>
       </div>
     </div>

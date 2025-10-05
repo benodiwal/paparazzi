@@ -15,6 +15,111 @@ body {
   line-height: 1.6;
 }
 
+.blurred-section {
+  filter: blur(8px);
+  pointer-events: none;
+  opacity: 0.6;
+  position: relative;
+  user-select: none;
+}
+
+.placeholder-content {
+  text-align: center;
+  padding: 2rem;
+  filter: blur(0) !important;
+  opacity: 1 !important;
+  pointer-events: auto !important;
+  user-select: auto !important;
+}
+
+.placeholder-content p {
+  margin-bottom: 0.5rem;
+  color: #888;
+}
+
+.placeholder-content p:first-child {
+  font-size: 1.1rem;
+  color: #c4a376;
+}
+
+.coming-soon-banner {
+  background: #0f0f0f;
+  border: 1px solid #7a8450;
+  border-left: none;
+  border-right: none;
+  padding: 0.8rem 0;
+  margin: -3rem -3rem 2rem -3rem;
+  font-family: 'Courier New', 'Courier', monospace;
+  text-align: center;
+  overflow: hidden;
+}
+
+.banner-content {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 1rem;
+}
+
+.banner-text {
+  color: #c4a376;
+  font-weight: normal;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+@media (max-width: 768px) {
+  .coming-soon-banner {
+    position: relative;
+    background: transparent;
+    border: none;
+    padding: 0;
+    margin: -3rem -3rem 1rem -3rem;
+    height: 60px;
+  }
+
+  .banner-content {
+    position: absolute;
+    top: 0;
+    left: -20px;
+    right: -20px;
+    height: 100%;
+    background: #0f0f0f;
+    border: 1px solid #7a8450;
+    border-left: none;
+    border-right: none;
+    transform: rotate(-2deg);
+    transform-origin: center;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 0.9rem;
+  }
+
+  .banner-text {
+    transform: rotate(2deg);
+    letter-spacing: 0.5px;
+  }
+
+  .ascii-art {
+    font-size: 6px !important;
+    line-height: 1.1;
+    overflow-x: auto;
+    white-space: pre;
+    padding: 0 1rem;
+    transform: scale(0.8);
+    transform-origin: center;
+  }
+
+  .hero {
+    padding: 1rem 0;
+  }
+
+  .intro {
+    padding: 0 1rem;
+  }
+}
+
 .container {
   max-width: 1200px;
   margin: 0 auto;

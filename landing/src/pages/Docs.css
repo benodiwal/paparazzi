@@ -48,6 +48,27 @@
   font-size: 1.1rem;
 }
 
+.coming-soon-docs {
+  text-align: center;
+  padding: 4rem 2rem;
+  background: #242424;
+  border: 1px solid #333;
+  border-radius: 8px;
+  margin: 2rem 0;
+}
+
+.coming-soon-docs h2 {
+  color: #c4a376;
+  font-size: 2rem;
+  font-weight: normal;
+  margin-bottom: 1rem;
+}
+
+.coming-soon-docs p {
+  color: #888;
+  font-size: 1.1rem;
+}
+
 .docs-sections {
   display: flex;
   flex-direction: column;
