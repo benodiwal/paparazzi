@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { Link } from 'react-router-dom'
 import './App.css'
 
 interface NavLinkProps {
@@ -191,12 +192,12 @@ function App() {
   const links = [
     {
       title: 'github',
-      href: 'https://github.com/benodiwal/paparazzi',
+      href: 'https://github.com/benodiwal/clipse',
       description: 'source code, issues, pull requests welcome'
     },
     {
       title: 'claude code',
-      href: 'https://docs.claude.ai/claude-code',
+      href: 'https://www.claude.com/product/claude-code',
       description: 'learn more about claude code'
     }
   ]
@@ -222,20 +223,38 @@ function App() {
       href: '#install'
     },
     {
-      title: 'Usage - Capture Screen',
-      content: 'paparazzi - capture entire screen and send to claude code',
+      title: 'Usage - Start Service',
+      content: 'paparazzi run - starts the hotkey listener service',
       section: 'Usage',
       href: '#docs'
     },
     {
-      title: 'Usage - Select Region',
-      content: 'paparazzi --region - select region to capture',
+      title: 'Usage - Background Mode',
+      content: 'paparazzi run --background - runs the service in background mode',
       section: 'Usage',
       href: '#docs'
     },
     {
-      title: 'Usage - Capture Window',
-      content: 'paparazzi --window - capture specific window',
+      title: 'Usage - Configure Hotkeys',
+      content: 'paparazzi hotkeys --modifiers "ctrl+shift" --key s - set custom keyboard shortcuts',
+      section: 'Usage',
+      href: '#docs'
+    },
+    {
+      title: 'Usage - View Configuration',
+      content: 'paparazzi hotkeys --list - show current hotkey settings',
+      section: 'Usage',
+      href: '#docs'
+    },
+    {
+      title: 'Usage - Version',
+      content: 'paparazzi version - display version information',
+      section: 'Usage',
+      href: '#docs'
+    },
+    {
+      title: 'Usage - Help',
+      content: 'paparazzi help - show help information',
       section: 'Usage',
       href: '#docs'
     },
@@ -303,7 +322,8 @@ function App() {
     <div className="container">
       <nav>
         <NavLink href="#home">home</NavLink>
-        <NavLink href="#docs">docs</NavLink>
+        <Link to="/docs" className="nav-link">docs</Link>
+        <Link to="/blogs" className="nav-link">blogs</Link>
         <NavLink href="#install">install</NavLink>
         <NavLink href="https://github.com/benodiwal/paparazzi">github</NavLink>
         <div className="shortcuts" onClick={() => setIsSearchOpen(true)}>
@@ -351,33 +371,48 @@ function App() {
 
           <div className="section">
             <Item
+              title="start service"
               description={
                 <>
-                  capture entire screen and send to claude code:
-                  <div style={{ marginTop: '0.5rem' }}>
-                    <code>paparazzi</code>
+                  <code>paparazzi run</code>
+                  <div style={{ marginTop: '0.5rem', color: '#666', fontSize: '0.9rem' }}>
+                    starts the hotkey listener service
                   </div>
                 </>
               }
             />
 
             <Item
+              title="background mode"
               description={
                 <>
-                  select region to capture:
-                  <div style={{ marginTop: '0.5rem' }}>
-                    <code>paparazzi --region</code>
+                  <code>paparazzi run --background</code>
+                  <div style={{ marginTop: '0.5rem', color: '#666', fontSize: '0.9rem' }}>
+                    runs the service in background mode
                   </div>
                 </>
               }
             />
 
             <Item
+              title="configure hotkeys"
               description={
                 <>
-                  capture specific window:
-                  <div style={{ marginTop: '0.5rem' }}>
-                    <code>paparazzi --window</code>
+                  <code>paparazzi hotkeys --modifiers "ctrl+shift" --key s</code>
+                  <div style={{ marginTop: '0.5rem', color: '#666', fontSize: '0.9rem' }}>
+                    set custom keyboard shortcuts
+                  </div>
+                </>
+              }
+            />
+
+            <Item
+              title="view configuration"
+              description={
+                <>
+                  <code>paparazzi hotkeys --list</code>
+                  <div style={{ marginTop: '0.5rem', color: '#666', fontSize: '0.9rem' }}>
+                    show current hotkey settings
                   </div>
                 </>
               }
