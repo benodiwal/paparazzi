@@ -228,7 +228,7 @@ More importantly, solving the daemon problem correctly means users can rely on P
 
 ---
 
-**Paparazzi** is open source and available on GitHub. Check it out if you're building CLI tools that need to run in the background, or if you're just curious about how daemon mode works under the hood.
+**Paparazzi** will be open source and available on GitHub when released. Stay tuned if you're building CLI tools that need to run in the background, or if you're just curious about how daemon mode works under the hood.
 
 I built it to scratch my own itch. Turns out, a lot of other people had the same itch.
 `
