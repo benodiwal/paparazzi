@@ -13,6 +13,62 @@ body {
   background: #1a1a1a;
   color: #999;
   line-height: 1.6;
+  transition: background 0.3s ease, color 0.3s ease;
+}
+
+/* App wrapper for dark mode */
+.app-wrapper {
+  min-height: 100vh;
+  position: relative;
+  background: #1a1a1a;
+  color: #999;
+  transition: background 0.3s ease, color 0.3s ease;
+}
+
+.app-wrapper.dark-mode {
+  background: #0a0a0a;
+  color: #999;
+}
+
+/* Torch effect overlay */
+.torch-effect {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  pointer-events: none;
+  z-index: 999;
+  mix-blend-mode: multiply;
+  transition: opacity 0.3s ease;
+}
+
+/* Theme toggle button */
+.theme-toggle {
+  background: transparent;
+  border: 1px solid #7a8450;
+  padding: 0.4rem 0.6rem;
+  border-radius: 3px;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #7a8450;
+}
+
+.theme-toggle:hover {
+  background: #7a8450;
+  color: #1a1a1a;
+  transform: scale(1.1);
+}
+
+.theme-toggle svg {
+  transition: transform 0.2s;
+}
+
+.theme-toggle:hover svg {
+  transform: rotate(15deg);
 }
 
 .blurred-section {
@@ -35,12 +91,15 @@ body {
 .placeholder-content p {
   margin-bottom: 0.5rem;
   color: #888;
+  transition: color 0.3s ease;
 }
 
 .placeholder-content p:first-child {
   font-size: 1.1rem;
   color: #c4a376;
+  transition: color 0.3s ease;
 }
+
 
 .coming-soon-banner {
   background: #0f0f0f;
@@ -52,6 +111,12 @@ body {
   font-family: 'Courier New', 'Courier', monospace;
   text-align: center;
   overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.app-wrapper:not(.dark-mode) .coming-soon-banner {
+  background: #0f0f0f;
+  border-color: #7a8450;
 }
 
 .banner-content {
@@ -66,7 +131,9 @@ body {
   font-weight: normal;
   letter-spacing: 1px;
   text-transform: uppercase;
+  transition: color 0.3s ease;
 }
+
 
 @media (max-width: 768px) {
   .coming-soon-banner {
@@ -94,6 +161,12 @@ body {
     justify-content: center;
     align-items: center;
     font-size: 0.9rem;
+    transition: all 0.3s ease;
+  }
+
+  .app-wrapper:not(.dark-mode) .banner-content {
+    background: #0f0f0f;
+    border-color: #7a8450;
   }
 
   .banner-text {
@@ -124,6 +197,8 @@ body {
   max-width: 1200px;
   margin: 0 auto;
   padding: 3rem;
+  position: relative;
+  z-index: 1;
 }
 
 nav {
@@ -144,8 +219,15 @@ nav {
   color: #c4a376;
 }
 
-.shortcuts {
+
+.nav-controls {
   margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.shortcuts {
   display: flex;
   gap: 0.5rem;
 }
@@ -155,6 +237,12 @@ nav {
   padding: 0.3rem 0.6rem;
   border-radius: 3px;
   font-size: 0.85rem;
+  color: #666;
+  transition: all 0.3s ease;
+}
+
+.app-wrapper:not(.dark-mode) .shortcut {
+  background: #2a2a2a;
   color: #666;
 }
 
@@ -172,31 +260,44 @@ nav {
   line-height: 1.2;
   white-space: pre;
   font-family: monospace;
+  transition: color 0.3s ease;
+}
+
+.dark-mode .ascii-art {
+  color: #555;
 }
 
 .intro h1 {
   color: #cc6633;
   margin-bottom: 1.5rem;
   text-transform: none;
+  transition: color 0.3s ease;
 }
+
 
 .intro p {
   color: #888;
   margin-bottom: 0.5rem;
   font-size: 0.95rem;
+  transition: color 0.3s ease;
 }
+
 
 .status {
   color: #666;
   font-style: italic;
   margin: 1.5rem 0;
+  transition: color 0.3s ease;
 }
+
 
 .description {
   margin: 2rem 0;
   color: #999;
   line-height: 1.7;
+  transition: color 0.3s ease;
 }
+
 
 .content {
   display: grid;
@@ -209,7 +310,9 @@ h1 {
   margin-bottom: 2rem;
   text-transform: lowercase;
   scroll-margin-top: 2rem;
+  transition: color 0.3s ease;
 }
+
 
 #home, #install, #docs, #features, #roadmap, #links {
   scroll-margin-top: 2rem;
@@ -228,7 +331,9 @@ h1 {
   font-weight: normal;
   margin-bottom: 0.5rem;
   color: #999;
+  transition: color 0.3s ease;
 }
+
 
 .item h3 a {
   color: #7a8450;
@@ -242,17 +347,22 @@ h1 {
   border-bottom: 1px solid #c4a376;
 }
 
+
 .item-meta {
   color: #666;
   font-size: 0.9rem;
   margin-bottom: 0.5rem;
+  transition: color 0.3s ease;
 }
+
 
 .item-description {
   color: #888;
   font-size: 0.9rem;
   line-height: 1.6;
+  transition: color 0.3s ease;
 }
+
 
 code {
   background: #0f0f0f;
@@ -262,6 +372,12 @@ code {
   font-size: 0.85rem;
   display: inline-block;
   margin-top: 0.5rem;
+  transition: all 0.3s ease;
+}
+
+.app-wrapper:not(.dark-mode) code {
+  background: #0f0f0f;
+  color: #c4a376;
 }
 
 ul {
@@ -275,6 +391,7 @@ li {
   padding-left: 1.2rem;
   position: relative;
   line-height: 1.5;
+  transition: color 0.3s ease;
 }
 
 li:before {
@@ -282,7 +399,9 @@ li:before {
   position: absolute;
   left: 0;
   color: #666;
+  transition: color 0.3s ease;
 }
+
 
 @media (max-width: 900px) {
   .container {
@@ -331,7 +450,7 @@ li:before {
   right: 0;
   bottom: 0;
   background: rgba(0, 0, 0, 0.85);
-  z-index: 1000;
+  z-index: 1001;
   display: flex;
   align-items: flex-start;
   justify-content: center;

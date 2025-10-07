@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
+import { Sun, Moon } from 'lucide-react'
 import './App.css'
 
 interface NavLinkProps {
@@ -196,6 +197,8 @@ const SearchModal = ({ isOpen, onClose, searchableContent }: SearchModalProps) =
 
 function App() {
   const [isSearchOpen, setIsSearchOpen] = useState(false)
+  const [isDarkMode, setIsDarkMode] = useState(false)
+  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 })
 
   const asciiArt = `
 ................. ...  ..............................  ....  ..........
@@ -319,6 +322,23 @@ function App() {
     }))
   ]
 
+  // Mouse tracking for torch effect
+  useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => {
+      if (isDarkMode) {
+        setMousePosition({ x: e.clientX, y: e.clientY })
+      }
+    }
+
+    if (isDarkMode) {
+      window.addEventListener('mousemove', handleMouseMove)
+    }
+
+    return () => {
+      window.removeEventListener('mousemove', handleMouseMove)
+    }
+  }, [isDarkMode])
+
   // Keyboard shortcut handler
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -336,7 +356,16 @@ function App() {
   }, [])
 
   return (
-    <div className="container">
+    <div className={`app-wrapper ${isDarkMode ? 'dark-mode' : ''}`}>
+      {isDarkMode && (
+        <div
+          className="torch-effect"
+          style={{
+            background: `radial-gradient(circle 200px at ${mousePosition.x}px ${mousePosition.y}px, transparent 0%, rgba(0, 0, 0, 0.4) 40%, rgba(0, 0, 0, 0.95) 100%)`
+          }}
+        />
+      )}
+      <div className="container">
       <div className="coming-soon-banner">
         <div className="banner-content">
           <span className="banner-text">coming soon</span>
@@ -349,9 +378,18 @@ function App() {
         <Link to="/blogs" className="nav-link">blogs</Link>
         <NavLink href="#install">install</NavLink>
         <NavLink href="https://github.com/benodiwal">github</NavLink>
-        <div className="shortcuts" onClick={() => setIsSearchOpen(true)}>
-          <span className="shortcut">⌘</span>
-          <span className="shortcut">K</span>
+        <div className="nav-controls">
+          <button
+            className="theme-toggle"
+            onClick={() => setIsDarkMode(!isDarkMode)}
+            title={isDarkMode ? "Switch to light mode" : "Switch to dark mode"}
+          >
+            {isDarkMode ? <Sun size={18} /> : <Moon size={18} />}
+          </button>
+          <div className="shortcuts" onClick={() => setIsSearchOpen(true)}>
+            <span className="shortcut">⌘</span>
+            <span className="shortcut">K</span>
+          </div>
         </div>
       </nav>
 
@@ -518,6 +556,7 @@ function App() {
         onClose={() => setIsSearchOpen(false)}
         searchableContent={searchableContent}
       />
+      </div>
     </div>
   )
 }
