@@ -10,8 +10,8 @@ pub fn capture() -> Result<String> {
     // -i: interactive mode (allows user to select area or window)
     // -o: no shadow for window capture
     let output = Command::new("screencapture")
-        .arg("-i")  // Interactive mode - allows selection or window capture with space bar
-        .arg("-o")  // No shadow
+        .arg("-i") // Interactive mode - allows selection or window capture with space bar
+        .arg("-o") // No shadow
         .arg(&path_str)
         .output()?;
 

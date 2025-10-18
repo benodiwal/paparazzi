@@ -1,8 +1,8 @@
 use chrono::{DateTime, Local};
-use std::fs;
-use std::path::PathBuf;
 use dirs::home_dir;
 use serde::{Deserialize, Serialize};
+use std::fs;
+use std::path::PathBuf;
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum LogLevel {

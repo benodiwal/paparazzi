@@ -1,0 +1,49 @@
+version: 2
+updates:
+  # Rust/Cargo dependencies
+  - package-ecosystem: "cargo"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "06:00"
+    open-pull-requests-limit: 10
+    reviewers:
+      - "benodiwal"
+    assignees:
+      - "benodiwal"
+    commit-message:
+      prefix: "chore"
+      include: "scope"
+
+  # Landing page npm dependencies
+  - package-ecosystem: "npm"
+    directory: "/landing"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "06:00"
+    open-pull-requests-limit: 10
+    reviewers:
+      - "benodiwal"
+    assignees:
+      - "benodiwal"
+    commit-message:
+      prefix: "chore"
+      include: "scope"
+
+  # GitHub Actions
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "06:00"
+    open-pull-requests-limit: 5
+    reviewers:
+      - "benodiwal"
+    assignees:
+      - "benodiwal"
+    commit-message:
+      prefix: "chore"
+      include: "scope"

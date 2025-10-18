@@ -1,13 +1,13 @@
-use anyhow::Result;
-use std::process::Command;
-use std::path::{Path, PathBuf};
 use crate::logger;
+use anyhow::Result;
+use std::path::{Path, PathBuf};
+use std::process::Command;
 
 // Helper function to resolve script paths
 fn get_script_path(script_name: &str) -> PathBuf {
     let common_paths = [
-        "/usr/local/share/clipse/macos/applescripts",       // Installed location
-        "/opt/clipse/macos/applescripts",                   // Alternative install
+        "/usr/local/share/clipse/macos/applescripts", // Installed location
+        "/opt/clipse/macos/applescripts",             // Alternative install
     ];
 
     for base in &common_paths {
@@ -48,7 +48,11 @@ fn get_script_path(script_name: &str) -> PathBuf {
 #[cfg(target_os = "macos")]
 pub fn send_to_claude_code_terminal(message: &str) -> Result<()> {
     let pids = find_claude_code_processes()?;
-    logger::info(&format!("Found {} Claude Code processes: {:?}", pids.len(), pids));
+    logger::info(&format!(
+        "Found {} Claude Code processes: {:?}",
+        pids.len(),
+        pids
+    ));
 
     if send_to_iterm2_claude_tab(message).is_ok() {
         logger::success("Sent to Claude Code via iTerm2");
@@ -78,7 +82,9 @@ pub fn send_to_claude_code_terminal(message: &str) -> Result<()> {
         }
     }
 
-    Err(anyhow::anyhow!("Could not send to Claude Code terminal. Make sure Claude Code is running in a terminal."))
+    Err(anyhow::anyhow!(
+        "Could not send to Claude Code terminal. Make sure Claude Code is running in a terminal."
+    ))
 }
 
 #[cfg(target_os = "macos")]
@@ -98,7 +104,9 @@ fn find_claude_code_processes() -> Result<Vec<i32>> {
         .collect();
 
     if pids.is_empty() {
-        return Err(anyhow::anyhow!("No Claude Code processes found. Please make sure Claude Code is running."));
+        return Err(anyhow::anyhow!(
+            "No Claude Code processes found. Please make sure Claude Code is running."
+        ));
     }
 
     Ok(pids)

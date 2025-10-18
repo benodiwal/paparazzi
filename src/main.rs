@@ -222,7 +222,8 @@ fn handle_logging_command(level: Option<String>, show: bool) -> Result<()> {
             return Ok(());
         }
 
-        logger::save_log_config(&level_str).map_err(|e| anyhow::anyhow!("Failed to save log config: {}", e))?;
+        logger::save_log_config(&level_str)
+            .map_err(|e| anyhow::anyhow!("Failed to save log config: {}", e))?;
         println!("Log level updated to: {}", level_str);
 
         match level_str.as_str() {

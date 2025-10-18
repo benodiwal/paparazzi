@@ -1,8 +1,8 @@
 use clap::{Parser, Subcommand};
 use global_hotkey::hotkey::{Code, Modifiers};
+use serde::{Deserialize, Serialize};
 use std::fs;
 use std::path::PathBuf;
-use serde::{Deserialize, Serialize};
 
 #[derive(Parser)]
 #[command(name = "clipse")]
@@ -62,7 +62,7 @@ pub enum Commands {
 pub struct HotkeyConfig {
     pub modifiers: String,
     pub key: String,
-    
+
     #[serde(skip)]
     pub modifiers_parsed: Option<Modifiers>,
     #[serde(skip)]
@@ -84,7 +84,7 @@ impl HotkeyConfig {
     pub fn from_strings(modifiers_str: &str, key_str: &str) -> Result<Self, String> {
         let modifiers_parsed = parse_modifiers(modifiers_str)?;
         let key_parsed = parse_key(key_str)?;
-        
+
         Ok(HotkeyConfig {
             modifiers: modifiers_str.to_string(),
             key: key_str.to_string(),
@@ -122,7 +122,8 @@ impl HotkeyConfig {
     }
 
     pub fn modifiers(&self) -> Modifiers {
-        self.modifiers_parsed.unwrap_or(Modifiers::CONTROL | Modifiers::SHIFT)
+        self.modifiers_parsed
+            .unwrap_or(Modifiers::CONTROL | Modifiers::SHIFT)
     }
 
     pub fn key(&self) -> Code {
@@ -241,14 +242,15 @@ fn format_key(code: &Code) -> String {
         Code::Tab => "Tab",
         Code::Escape => "Escape",
         _ => "Unknown",
-    }.to_string()
+    }
+    .to_string()
 }
 
 fn get_config_path() -> PathBuf {
     let config_dir = dirs::config_dir()
         .unwrap_or_else(|| PathBuf::from("."))
         .join("paparazzi");
-    
+
     fs::create_dir_all(&config_dir).ok();
     config_dir.join("config.json")
 }
@@ -257,16 +259,15 @@ pub fn save_hotkey_config(config: &HotkeyConfig) -> Result<(), String> {
     let config_path = get_config_path();
     let json = serde_json::to_string_pretty(config)
         .map_err(|e| format!("Failed to serialize config: {}", e))?;
-    
-    fs::write(&config_path, json)
-        .map_err(|e| format!("Failed to write config file: {}", e))?;
-    
+
+    fs::write(&config_path, json).map_err(|e| format!("Failed to write config file: {}", e))?;
+
     Ok(())
 }
 
 pub fn load_hotkey_config() -> HotkeyConfig {
     let config_path = get_config_path();
-    
+
     if config_path.exists() {
         if let Ok(contents) = fs::read_to_string(&config_path) {
             if let Ok(mut config) = serde_json::from_str::<HotkeyConfig>(&contents) {
@@ -276,6 +277,6 @@ pub fn load_hotkey_config() -> HotkeyConfig {
             }
         }
     }
-    
+
     HotkeyConfig::default()
 }
