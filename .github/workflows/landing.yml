@@ -111,7 +111,7 @@ jobs:
           sleep 5
 
       - name: Run Lighthouse CI
-        uses: treosh/lighthouse-ci-action@v11
+        uses: treosh/lighthouse-ci-action@v12
         with:
           configPath: './landing/.lighthouserc.json'
           uploadArtifacts: true
