@@ -261,7 +261,7 @@ function App() {
   const links = [
     {
       title: 'github',
-      href: 'https://github.com/benodiwal',
+      href: 'https://github.com/benodiwal/paparazzi',
       description: 'source code, issues, pull requests welcome'
     },
     {
@@ -386,7 +386,7 @@ function App() {
         <Link to="/docs" className="nav-link">docs</Link>
         <Link to="/blogs" className="nav-link">blogs</Link>
         <NavLink href="#install">install</NavLink>
-        <NavLink href="https://github.com/benodiwal">github</NavLink>
+        <NavLink href="https://github.com/benodiwal/paparazzi">github</NavLink>
         <div className="nav-controls">
           <button
             className="theme-toggle"
