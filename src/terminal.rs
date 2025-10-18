@@ -3,51 +3,170 @@ use anyhow::Result;
 #[cfg(target_os = "macos")]
 use crate::logger;
 #[cfg(target_os = "macos")]
-use std::path::{Path, PathBuf};
+use std::fs;
 #[cfg(target_os = "macos")]
 use std::process::Command;
-
-// Helper function to resolve script paths
 #[cfg(target_os = "macos")]
-fn get_script_path(script_name: &str) -> PathBuf {
-    let common_paths = [
-        "/usr/local/share/paparazzi/macos/applescripts", // Installed location
-        "/opt/paparazzi/macos/applescripts",             // Alternative install
-    ];
+use tempfile::NamedTempFile;
 
-    for base in &common_paths {
-        let path = Path::new(base).join(script_name);
-        if path.exists() {
-            return path;
-        }
-    }
+// Embedded AppleScript content
+#[cfg(target_os = "macos")]
+const ITERM2_SCRIPT: &str = r#"on run argv
+    set messageText to item 1 of argv
 
-    if let Ok(exe_path) = std::env::current_exe() {
-        // For daemon mode, the executable might be in target/debug or target/release
-        // We need to go up to find the project root
-        let mut current = exe_path.as_path();
+    tell application "iTerm"
+        set foundSession to false
 
-        for _ in 0..5 {
-            let script_path = current.join("macos/applescripts").join(script_name);
-            if script_path.exists() {
-                return script_path;
-            }
+        -- Loop through all windows
+        repeat with w in windows
+            -- Loop through all tabs in the window
+            repeat with t in tabs of w
+                -- Loop through all sessions in the tab
+                repeat with s in sessions of t
+                    -- Get the session content
+                    set sessionText to contents of s
 
-            if let Some(parent) = current.parent() {
-                current = parent;
-            } else {
-                break;
-            }
-        }
-    }
+                    -- Check if this session contains Claude Code indicators
+                    if sessionText contains "claude" or sessionText contains "Claude" then
+                        -- Switch to this window
+                        select w
+                        -- Switch to this tab
+                        select t
+                        -- Switch to this session
+                        select s
+                        -- Send the text
+                        tell s to write text messageText
+                        set foundSession to true
+                        exit repeat
+                    end if
+                end repeat
+                if foundSession then exit repeat
+            end repeat
+            if foundSession then exit repeat
+        end repeat
 
-    let fallback = Path::new("macos/applescripts").join(script_name);
+        if foundSession then
+            activate
+            return "true"
+        else
+            return "false"
+        end if
+    end tell
+end run"#;
 
-    if !fallback.exists() {
-        Path::new("/Users/sachin/personal/paparazzi/macos/applescripts").join(script_name)
-    } else {
-        fallback
-    }
+#[cfg(target_os = "macos")]
+const TERMINAL_SCRIPT: &str = r#"on run argv
+    set messageText to item 1 of argv
+
+    tell application "Terminal"
+        set foundTab to false
+
+        -- Loop through all windows
+        repeat with w in windows
+            -- Loop through all tabs in the window
+            repeat with t in tabs of w
+                -- Get the tab's processes
+                set tabProcesses to processes of t
+
+                -- Check if any process contains "claude"
+                repeat with p in tabProcesses
+                    if p contains "claude" or p contains "Claude" then
+                        -- Switch to this window and tab
+                        set frontmost of w to true
+                        set selected of t to true
+                        activate
+
+                        -- Send the text
+                        do script messageText in t
+                        set foundTab to true
+                        exit repeat
+                    end if
+                end repeat
+                if foundTab then exit repeat
+            end repeat
+            if foundTab then exit repeat
+        end repeat
+
+        return foundTab
+    end tell
+end run"#;
+
+#[cfg(target_os = "macos")]
+const GHOSTTY_SCRIPT: &str = r#"on run argv
+    set messageText to item 1 of argv
+
+    -- First, copy the message to clipboard using pbcopy
+    set the clipboard to messageText
+
+    tell application "System Events"
+        tell process "Ghostty"
+            set frontmost to true
+
+            -- Look for windows
+            set windowList to windows
+            if (count of windowList) > 0 then
+                -- Focus the first/current window (assuming it's the active one)
+                set targetWindow to item 1 of windowList
+                perform action "AXRaise" of targetWindow
+                set focused of targetWindow to true
+
+                -- Wait a moment for focus
+                delay 0.3
+
+                -- Paste the content using Cmd+V
+                key code 9 using command down
+
+                -- Press return
+                delay 0.1
+                key code 36
+                return "true"
+            end if
+        end tell
+    end tell
+    return "false"
+end run"#;
+
+#[cfg(target_os = "macos")]
+const TERMINAL_TTY_SCRIPT: &str = r#"on run argv
+    set ttyPath to item 1 of argv
+    set messageText to item 2 of argv
+
+    tell application "Terminal"
+        set foundTab to false
+
+        -- Loop through all windows
+        repeat with w in windows
+            -- Loop through all tabs in the window
+            repeat with t in tabs of w
+                -- Get the tab's tty
+                set tabTty to tty of t
+
+                -- Check if this matches our target tty
+                if tabTty is equal to ttyPath then
+                    -- Switch to this window and tab
+                    set frontmost of w to true
+                    set selected of t to true
+                    activate
+
+                    -- Send the text
+                    do script messageText in t
+                    set foundTab to true
+                    exit repeat
+                end if
+            end repeat
+            if foundTab then exit repeat
+        end repeat
+
+        return foundTab
+    end tell
+end run"#;
+
+// Helper function to create temporary AppleScript file and return its path
+#[cfg(target_os = "macos")]
+fn create_temp_script(script_content: &str) -> Result<NamedTempFile> {
+    let temp_file = NamedTempFile::new()?;
+    fs::write(temp_file.path(), script_content)?;
+    Ok(temp_file)
 }
 
 #[cfg(target_os = "macos")]
@@ -141,10 +260,10 @@ fn find_terminal_for_process(pid: i32) -> Result<String> {
 // iTerm2
 #[cfg(target_os = "macos")]
 fn send_to_iterm2_claude_tab(message: &str) -> Result<()> {
-    let script_path = get_script_path("iterm2_send.applescript");
+    let script_file = create_temp_script(ITERM2_SCRIPT)?;
 
     let output = Command::new("osascript")
-        .arg(&script_path)
+        .arg(script_file.path())
         .arg(message)
         .output()?;
 
@@ -166,10 +285,10 @@ fn send_to_iterm2_claude_tab(message: &str) -> Result<()> {
 // Terminal.app
 #[cfg(target_os = "macos")]
 fn send_to_terminal_app_claude_tab(message: &str) -> Result<()> {
-    let script_path = get_script_path("terminal_send.applescript");
+    let script_file = create_temp_script(TERMINAL_SCRIPT)?;
 
     let output = Command::new("osascript")
-        .arg(&script_path)
+        .arg(script_file.path())
         .arg(message)
         .output()?;
 
@@ -200,10 +319,10 @@ fn send_to_ghostty_claude_tab(message: &str) -> Result<()> {
             && terminal_name.to_lowercase().contains("ghostty")
         {
             // Found Claude running in Ghostty, proceed with the script
-            let script_path = get_script_path("ghostty_send.applescript");
+            let script_file = create_temp_script(GHOSTTY_SCRIPT)?;
 
             let output = Command::new("osascript")
-                .arg(&script_path)
+                .arg(script_file.path())
                 .arg(message)
                 .output()?;
 
@@ -254,10 +373,10 @@ fn get_terminal_name_for_process(pid: i32) -> Result<String> {
 // Terminal.app
 #[cfg(target_os = "macos")]
 fn send_to_terminal_app_by_tty(tty: &str, message: &str) -> Result<()> {
-    let script_path = get_script_path("terminal_tty_send.applescript");
+    let script_file = create_temp_script(TERMINAL_TTY_SCRIPT)?;
 
     let output = Command::new("osascript")
-        .arg(&script_path)
+        .arg(script_file.path())
         .arg(tty)
         .arg(message)
         .output()?;
