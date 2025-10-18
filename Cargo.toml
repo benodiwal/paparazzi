@@ -1,7 +1,7 @@
 [package]
 name = "paparazzi"
 description = "A macOS-native command-line tool that captures screenshots and sends them directly to Claude Code with minimal setup."
-version = "0.1.0"
+version = "0.1.1"
 edition = "2024"
 license = "MIT"
 readme = "README.md"
