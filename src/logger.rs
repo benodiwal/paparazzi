@@ -28,7 +28,7 @@ impl Default for LogConfig {
 fn get_log_config_path() -> PathBuf {
     home_dir()
         .unwrap_or_else(|| PathBuf::from("."))
-        .join(".clipse")
+        .join(".paparazzi")
         .join("log_config.json")
 }
 

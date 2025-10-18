@@ -15,7 +15,9 @@ impl Daemon {
 
     pub fn start(&self) -> Result<()> {
         if self.is_running()? {
-            anyhow::bail!("Clipse daemon is already running. Use 'clipse stop' to stop it first.");
+            anyhow::bail!(
+                "Paparazzi daemon is already running. Use 'paparazzi stop' to stop it first."
+            );
         }
 
         let stdout = File::create(STDOUT_FILE)?;
@@ -38,7 +40,7 @@ impl Daemon {
     pub fn stop(&self) -> Result<()> {
         // First check if daemon is running
         if !self.is_running()? {
-            logger::info("No daemon is currently running");
+            println!("No daemon is currently running");
             return Ok(());
         }
 
@@ -67,7 +69,7 @@ impl Daemon {
         match self.is_running()? {
             true => {
                 let pid = read_pid_file()?;
-                println!("Clipse daemon is running");
+                println!("Paparazzi daemon is running");
                 println!("   PID: {}", pid);
                 println!("   PID file: {}", PID_FILE);
                 println!("   Logs: {}", STDOUT_FILE);
@@ -81,8 +83,8 @@ impl Daemon {
                 }
             }
             false => {
-                println!("Clipse daemon is not running");
-                println!("\nStart it with: clipse run --background");
+                println!("Paparazzi daemon is not running");
+                println!("\nStart it with: paparazzi run --background");
             }
         }
 
@@ -91,7 +93,7 @@ impl Daemon {
 
     pub fn attach(&self, follow: bool) -> Result<()> {
         if !self.is_running()? {
-            anyhow::bail!("No daemon is running. Start it with: clipse run --background");
+            anyhow::bail!("No daemon is running. Start it with: paparazzi run --background");
         }
 
         let log_path = get_log_file_path();

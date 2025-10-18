@@ -165,17 +165,17 @@ fn handle_hotkeys_command(
                 if daemon.is_running()? {
                     println!("\nDaemon is currently running with old hotkey");
                     println!("   Restart it to apply changes:");
-                    println!("   $ clipse stop");
-                    println!("   $ clipse run --background");
+                    println!("   $ paparazzi stop");
+                    println!("   $ paparazzi run --background");
                 } else {
-                    println!("\nRun 'clipse run --background' to start with the new hotkey");
+                    println!("\nRun 'paparazzi run --background' to start with the new hotkey");
                 }
             }
             Err(e) => {
                 eprintln!("Invalid hotkey configuration: {}", e);
                 eprintln!("\nExample usage:");
-                eprintln!("  clipse hotkeys --modifiers \"ctrl+shift\" --key s");
-                eprintln!("  clipse hotkeys --modifiers \"cmd+alt\" --key p");
+                eprintln!("  paparazzi hotkeys --modifiers \"ctrl+shift\" --key s");
+                eprintln!("  paparazzi hotkeys --modifiers \"cmd+alt\" --key p");
             }
         }
     } else {
@@ -184,12 +184,12 @@ fn handle_hotkeys_command(
         println!("Current hotkey: {}", cli::load_hotkey_config());
         println!();
         println!("To change the hotkey:");
-        println!("  clipse hotkeys --modifiers <mods> --key <key>");
+        println!("  paparazzi hotkeys --modifiers <mods> --key <key>");
         println!();
         println!("Examples:");
-        println!("  clipse hotkeys --modifiers \"ctrl+shift\" --key s");
-        println!("  clipse hotkeys --modifiers \"cmd+alt\" --key p");
-        println!("  clipse hotkeys --modifiers \"ctrl+alt\" --key x");
+        println!("  paparazzi hotkeys --modifiers \"ctrl+shift\" --key s");
+        println!("  paparazzi hotkeys --modifiers \"cmd+alt\" --key p");
+        println!("  paparazzi hotkeys --modifiers \"ctrl+alt\" --key x");
         println!();
         println!("Available modifiers:");
         println!("  ctrl, shift, alt, cmd (or super/win)");
@@ -238,7 +238,7 @@ fn handle_logging_command(level: Option<String>, show: bool) -> Result<()> {
         println!("Current level: {}", logger::get_current_log_level());
         println!();
         println!("To change the log level:");
-        println!("  clipse logging --level <level>");
+        println!("  paparazzi logging --level <level>");
         println!();
         println!("Available levels:");
         println!("  off      - No logging");
@@ -249,26 +249,26 @@ fn handle_logging_command(level: Option<String>, show: bool) -> Result<()> {
         println!("  all      - Show all messages (default)");
         println!();
         println!("Examples:");
-        println!("  clipse logging --level all");
-        println!("  clipse logging --level off");
-        println!("  clipse logging --show");
+        println!("  paparazzi logging --level all");
+        println!("  paparazzi logging --level off");
+        println!("  paparazzi logging --show");
     }
 
     Ok(())
 }
 
 fn print_version() {
-    println!("clipse {}", env!("CARGO_PKG_VERSION"));
+    println!("paparazzi {}", env!("CARGO_PKG_VERSION"));
     println!("A CLI tool for instant screenshots to Claude Code");
     println!();
     println!("Built with Rust\n");
 }
 
 fn print_intro() {
-    println!("\nClipse - Instant Screenshots to Claude Code");
+    println!("\nPaparazzi - Instant Screenshots to Claude Code");
     println!();
     println!("USAGE:");
-    println!("  clipse [COMMAND]");
+    println!("  paparazzi [COMMAND]");
     println!();
     println!("COMMANDS:");
     println!("  run       Start the screenshot service");
@@ -286,20 +286,20 @@ fn print_intro() {
     println!("  help      Display this help message");
     println!();
     println!("QUICK START:");
-    println!("  1. Run 'clipse run --background' to start the daemon");
+    println!("  1. Run 'paparazzi run --background' to start the daemon");
     println!("  2. Press the configured hotkey to take a screenshot");
     println!("  3. The screenshot will be sent to Claude Code");
     println!();
     println!("EXAMPLES:");
-    println!("  clipse run                                    # Run in foreground");
-    println!("  clipse run --background                       # Run as daemon");
-    println!("  clipse stop                                   # Stop daemon");
-    println!("  clipse status                                 # Check daemon status");
-    println!("  clipse logs                                   # View daemon logs");
-    println!("  clipse hotkeys --list                         # Show current hotkey");
-    println!("  clipse hotkeys --modifiers \"ctrl+shift\" --key s  # Set new hotkey");
-    println!("  clipse logging --show                         # Show log level");
-    println!("  clipse logging --level off                    # Disable logging");
+    println!("  paparazzi run                                    # Run in foreground");
+    println!("  paparazzi run --background                       # Run as daemon");
+    println!("  paparazzi stop                                   # Stop daemon");
+    println!("  paparazzi status                                 # Check daemon status");
+    println!("  paparazzi logs                                   # View daemon logs");
+    println!("  paparazzi hotkeys --list                         # Show current hotkey");
+    println!("  paparazzi hotkeys --modifiers \"ctrl+shift\" --key s  # Set new hotkey");
+    println!("  paparazzi logging --show                         # Show log level");
+    println!("  paparazzi logging --level off                    # Disable logging");
     println!();
     println!("For more information, visit: https://github.com/benodiwal/paparazzi");
     println!("\n Bye\n");

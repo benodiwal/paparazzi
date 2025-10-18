@@ -323,28 +323,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "b94f61472cee1439c0b966b47e3aca9ae07e45d070759512cd390ea2bebc6675"
 
 [[package]]
-name = "clipse"
-version = "0.1.0"
-dependencies = [
- "anyhow",
- "chrono",
- "clap",
- "crossbeam-channel",
- "daemonize",
- "dirs",
- "enigo",
- "global-hotkey",
- "nix 0.30.1",
- "screenshots",
- "serde",
- "serde_json",
- "signal-hook",
- "sysinfo",
- "tempfile",
- "winit",
-]
-
-[[package]]
 name = "color_quant"
 version = "1.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1493,6 +1471,28 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "36820e9051aca1014ddc75770aab4d68bc1e9e632f0f5627c4086bc216fb583b"
 dependencies = [
  "ttf-parser",
+]
+
+[[package]]
+name = "paparazzi"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "chrono",
+ "clap",
+ "crossbeam-channel",
+ "daemonize",
+ "dirs",
+ "enigo",
+ "global-hotkey",
+ "nix 0.30.1",
+ "screenshots",
+ "serde",
+ "serde_json",
+ "signal-hook",
+ "sysinfo",
+ "tempfile",
+ "winit",
 ]
 
 [[package]]

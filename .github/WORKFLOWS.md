@@ -65,9 +65,9 @@ GITHUB_TOKEN=automatically_provided_by_github
 Ensure your `Cargo.toml` has proper metadata for publishing:
 ```toml
 [package]
-name = "clipse"
+name = "paparazzi"
 description = "A CLI tool for instant screenshots to Claude Code"
-repository = "https://github.com/your-username/clipse"
+repository = "https://github.com/your-username/paparazzi"
 license = "MIT OR Apache-2.0"
 keywords = ["cli", "screenshot", "claude"]
 categories = ["command-line-utilities"]

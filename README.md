@@ -1,1 +1,1 @@
-# clipse
+# paparazzi

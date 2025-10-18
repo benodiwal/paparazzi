@@ -11,8 +11,8 @@ use std::process::Command;
 #[cfg(target_os = "macos")]
 fn get_script_path(script_name: &str) -> PathBuf {
     let common_paths = [
-        "/usr/local/share/clipse/macos/applescripts", // Installed location
-        "/opt/clipse/macos/applescripts",             // Alternative install
+        "/usr/local/share/paparazzi/macos/applescripts", // Installed location
+        "/opt/paparazzi/macos/applescripts",             // Alternative install
     ];
 
     for base in &common_paths {
@@ -44,7 +44,7 @@ fn get_script_path(script_name: &str) -> PathBuf {
     let fallback = Path::new("macos/applescripts").join(script_name);
 
     if !fallback.exists() {
-        Path::new("/Users/sachin/personal/clipse/macos/applescripts").join(script_name)
+        Path::new("/Users/sachin/personal/paparazzi/macos/applescripts").join(script_name)
     } else {
         fallback
     }

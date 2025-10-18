@@ -100,13 +100,13 @@ jobs:
         run: mkdir -p artifacts
 
       - name: Copy binary
-        run: cp target/${{ matrix.target }}/release/clipse${{ matrix.suffix }} artifacts/clipse-${{ matrix.target }}${{ matrix.suffix }}
+        run: cp target/${{ matrix.target }}/release/paparazzi${{ matrix.suffix }} artifacts/paparazzi-${{ matrix.target }}${{ matrix.suffix }}
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: clipse-${{ matrix.target }}
-          path: artifacts/clipse-${{ matrix.target }}${{ matrix.suffix }}
+          name: paparazzi-${{ matrix.target }}
+          path: artifacts/paparazzi-${{ matrix.target }}${{ matrix.suffix }}
           retention-days: 30
 
   security-audit:

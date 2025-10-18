@@ -6,7 +6,7 @@ use std::fs;
 use std::path::PathBuf;
 
 #[derive(Parser)]
-#[command(name = "clipse")]
+#[command(name = "paparazzi")]
 #[command(author = "Sachin Beniwal")]
 #[command(version = "0.1.0")]
 #[command(about = "A CLI tool for instant screenshots to Claude Code", long_about = None)]
