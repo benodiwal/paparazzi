@@ -6,6 +6,8 @@ edition = "2024"
 license = "MIT"
 readme = "README.md"
 authors = ["Sachin <sachinbeniwal0101@gmail.com>"]
+repository = "https://github.com/benodiwal/paparazzi"
+homepage = "https://www.paparazziforclaude.com"
 keywords = ["claude", "screenshot", "cli", "macos", "automation"]
 
 [[bin]]
