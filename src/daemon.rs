@@ -35,6 +35,12 @@ impl Daemon {
     }
 
     pub fn stop(&self) -> Result<()> {
+        // First check if daemon is running
+        if !self.is_running()? {
+            println!("No daemon is currently running");
+            return Ok(());
+        }
+
         let pid = read_pid_file()?;
 
         #[cfg(unix)]
@@ -49,6 +55,7 @@ impl Daemon {
 
         if !self.is_running()? {
             let _ = fs::remove_file(PID_FILE);
+            println!("Daemon stopped successfully");
             Ok(())
         } else {
             anyhow::bail!("Failed to stop the daemon. It may require manual intervention.");

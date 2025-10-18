@@ -220,6 +220,8 @@ fn print_intro() {
     println!("  stop      Stop the background daemon");
     println!("  status    Check daemon status");
     println!("  logs      View daemon logs");
+    println!("  attach    Attach to running daemon (bring to foreground)");
+    println!("    --follow, -f        Follow logs in real-time");
     println!("  hotkeys   Configure keyboard shortcuts");
     println!("  version   Display version information");
     println!("  help      Display this help message");
