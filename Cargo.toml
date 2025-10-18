@@ -1,8 +1,16 @@
 [package]
 name = "paparazzi"
+description = "A macOS-native command-line tool that captures screenshots and sends them directly to Claude Code with minimal setup."
 version = "0.1.0"
 edition = "2024"
+license = "MIT"
+readme = "README.md"
 authors = ["Sachin <sachinbeniwal0101@gmail.com>"]
+keywords = ["claude", "screenshot", "cli", "macos", "automation"]
+
+[[bin]]
+name = "paparazzi"
+path = "src/main.rs"
 
 [dependencies]
 anyhow = "1.0.100"
