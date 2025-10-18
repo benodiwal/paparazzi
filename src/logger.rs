@@ -34,12 +34,11 @@ fn get_log_config_path() -> PathBuf {
 
 fn load_log_config() -> LogConfig {
     let config_path = get_log_config_path();
-    if config_path.exists() {
-        if let Ok(content) = fs::read_to_string(&config_path) {
-            if let Ok(config) = serde_json::from_str::<LogConfig>(&content) {
-                return config;
-            }
-        }
+    if config_path.exists()
+        && let Ok(content) = fs::read_to_string(&config_path)
+        && let Ok(config) = serde_json::from_str::<LogConfig>(&content)
+    {
+        return config;
     }
     LogConfig::default()
 }

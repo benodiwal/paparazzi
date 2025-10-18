@@ -109,13 +109,11 @@ impl Daemon {
             }
 
             // TODO: Non Unix support
+        } else if log_path.exists() {
+            let logs = std::fs::read_to_string(&log_path)?;
+            println!("{}", logs);
         } else {
-            if log_path.exists() {
-                let logs = std::fs::read_to_string(&log_path)?;
-                println!("{}", logs);
-            } else {
-                println!("No logs yet.");
-            }
+            println!("No logs yet.");
         }
 
         Ok(())

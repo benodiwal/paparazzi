@@ -35,12 +35,12 @@ impl ApplicationHandler for App {
     ) {
         event_loop.set_control_flow(ControlFlow::Wait);
 
-        if let Ok(event) = self.receiver.try_recv() {
-            if event.state == global_hotkey::HotKeyState::Pressed {
-                logger::info("Hotkey pressed! Taking screenshot...");
-                if let Err(err) = handle_screenshot() {
-                    eprintln!("Error: {}", err);
-                }
+        if let Ok(event) = self.receiver.try_recv()
+            && event.state == global_hotkey::HotKeyState::Pressed
+        {
+            logger::info("Hotkey pressed! Taking screenshot...");
+            if let Err(err) = handle_screenshot() {
+                eprintln!("Error: {}", err);
             }
         }
     }
@@ -101,8 +101,8 @@ fn run_service_internal() -> Result<()> {
     #[cfg(unix)]
     setup_signal_handler();
 
-    println!("Using hotkey: {}", config.to_string());
-    println!("Press {} to take a screenshot", config.to_string());
+    println!("Using hotkey: {}", config);
+    println!("Press {} to take a screenshot", config);
     println!("Press Ctrl+C to exit\n");
 
     let event_loop = EventLoop::new()?;
@@ -130,16 +130,13 @@ fn setup_signal_handler() {
     use signal_hook::{consts::SIGTERM, iterator::Signals};
     use std::thread;
 
-    let mut signals = Signals::new(&[SIGTERM]).unwrap();
+    let mut signals = Signals::new([SIGTERM]).unwrap();
 
     thread::spawn(move || {
         for sig in signals.forever() {
-            match sig {
-                SIGTERM => {
-                    println!("\nReceived SIGTERM, shutting down gracefully...");
-                    std::process::exit(0);
-                }
-                _ => {}
+            if sig == SIGTERM {
+                println!("\nReceived SIGTERM, shutting down gracefully...");
+                std::process::exit(0);
             }
         }
     });
@@ -154,7 +151,7 @@ fn handle_hotkeys_command(
     if list {
         let config = cli::load_hotkey_config();
         println!("Current hotkey configuration:");
-        println!("   {}", config.to_string());
+        println!("   {}", config);
         return Ok(());
     }
 
@@ -163,7 +160,7 @@ fn handle_hotkeys_command(
             Ok(config) => {
                 cli::save_hotkey_config(&config).map_err(|e| anyhow::anyhow!(e))?;
                 logger::success("Hotkey configuration updated!");
-                println!("   New hotkey: {}", config.to_string());
+                println!("   New hotkey: {}", config);
 
                 if daemon.is_running()? {
                     println!("\nDaemon is currently running with old hotkey");
@@ -184,7 +181,7 @@ fn handle_hotkeys_command(
     } else {
         println!("Hotkey Configuration");
         println!();
-        println!("Current hotkey: {}", cli::load_hotkey_config().to_string());
+        println!("Current hotkey: {}", cli::load_hotkey_config());
         println!();
         println!("To change the hotkey:");
         println!("  clipse hotkeys --modifiers <mods> --key <key>");

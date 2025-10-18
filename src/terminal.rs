@@ -115,7 +115,7 @@ fn find_claude_code_processes() -> Result<Vec<i32>> {
 #[cfg(target_os = "macos")]
 fn find_terminal_for_process(pid: i32) -> Result<String> {
     let output = Command::new("ps")
-        .args(&["-p", &pid.to_string(), "-o", "tty="])
+        .args(["-p", &pid.to_string(), "-o", "tty="])
         .output()?;
 
     let tty = String::from_utf8_lossy(&output.stdout).trim().to_string();
@@ -191,8 +191,9 @@ fn send_to_ghostty_claude_tab(message: &str) -> Result<()> {
 
     // Check if any of the Claude processes are running in Ghostty
     for pid in &claude_pids {
-        if let Ok(terminal_name) = get_terminal_name_for_process(*pid) {
-            if terminal_name.to_lowercase().contains("ghostty") {
+        if let Ok(terminal_name) = get_terminal_name_for_process(*pid)
+            && terminal_name.to_lowercase().contains("ghostty")
+        {
                 // Found Claude running in Ghostty, proceed with the script
                 let script_path = get_script_path("ghostty_send.applescript");
 
@@ -212,7 +213,6 @@ fn send_to_ghostty_claude_tab(message: &str) -> Result<()> {
                 if result == "true" {
                     return Ok(());
                 }
-            }
         }
     }
 
@@ -224,7 +224,7 @@ fn send_to_ghostty_claude_tab(message: &str) -> Result<()> {
 fn get_terminal_name_for_process(pid: i32) -> Result<String> {
     // Get the parent process ID to find the terminal
     let output = Command::new("ps")
-        .args(&["-p", &pid.to_string(), "-o", "ppid="])
+        .args(["-p", &pid.to_string(), "-o", "ppid="])
         .output()?;
 
     let stdout = String::from_utf8_lossy(&output.stdout);
@@ -233,7 +233,7 @@ fn get_terminal_name_for_process(pid: i32) -> Result<String> {
 
     // Get the command name of the parent process (should be the terminal)
     let output = Command::new("ps")
-        .args(&["-p", &ppid.to_string(), "-o", "comm="])
+        .args(["-p", &ppid.to_string(), "-o", "comm="])
         .output()?;
 
     let stdout = String::from_utf8_lossy(&output.stdout);

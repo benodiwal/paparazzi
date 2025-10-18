@@ -1,6 +1,7 @@
 use clap::{Parser, Subcommand};
 use global_hotkey::hotkey::{Code, Modifiers};
 use serde::{Deserialize, Serialize};
+use std::fmt;
 use std::fs;
 use std::path::PathBuf;
 
@@ -99,7 +100,19 @@ impl HotkeyConfig {
         Ok(())
     }
 
-    pub fn to_string(&self) -> String {
+
+    pub fn modifiers(&self) -> Modifiers {
+        self.modifiers_parsed
+            .unwrap_or(Modifiers::CONTROL | Modifiers::SHIFT)
+    }
+
+    pub fn key(&self) -> Code {
+        self.key_parsed.unwrap_or(Code::KeyS)
+    }
+}
+
+impl fmt::Display for HotkeyConfig {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         if let (Some(mods), Some(key)) = (&self.modifiers_parsed, &self.key_parsed) {
             let mut mod_names = Vec::new();
             if mods.contains(Modifiers::CONTROL) {
@@ -115,19 +128,10 @@ impl HotkeyConfig {
                 mod_names.push("Cmd/Super");
             }
 
-            format!("{} + {}", mod_names.join(" + "), format_key(key))
+            write!(f, "{} + {}", mod_names.join(" + "), format_key(key))
         } else {
-            format!("{} + {}", self.modifiers, self.key)
+            write!(f, "{} + {}", self.modifiers, self.key)
         }
-    }
-
-    pub fn modifiers(&self) -> Modifiers {
-        self.modifiers_parsed
-            .unwrap_or(Modifiers::CONTROL | Modifiers::SHIFT)
-    }
-
-    pub fn key(&self) -> Code {
-        self.key_parsed.unwrap_or(Code::KeyS)
     }
 }
 
@@ -268,14 +272,12 @@ pub fn save_hotkey_config(config: &HotkeyConfig) -> Result<(), String> {
 pub fn load_hotkey_config() -> HotkeyConfig {
     let config_path = get_config_path();
 
-    if config_path.exists() {
-        if let Ok(contents) = fs::read_to_string(&config_path) {
-            if let Ok(mut config) = serde_json::from_str::<HotkeyConfig>(&contents) {
-                if config.parse().is_ok() {
-                    return config;
-                }
-            }
-        }
+    if config_path.exists()
+        && let Ok(contents) = fs::read_to_string(&config_path)
+        && let Ok(mut config) = serde_json::from_str::<HotkeyConfig>(&contents)
+        && config.parse().is_ok()
+    {
+        return config;
     }
 
     HotkeyConfig::default()
