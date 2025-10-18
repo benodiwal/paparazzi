@@ -16,12 +16,6 @@ function Docs() {
         </header>
 
         <div className="docs-sections">
-          <div className="coming-soon-docs">
-            <h2>Coming Soon</h2>
-            <p>Full documentation will be available when the CLI tool is released.</p>
-          </div>
-
-          {/*
           <section className="docs-section">
             <h2 id="getting-started">Getting Started</h2>
             <p>Paparazzi is a lightweight CLI tool that captures screenshots and sends them directly to Claude Code with zero friction.</p>
@@ -35,13 +29,13 @@ function Docs() {
 
             <h3>Quick Installation</h3>
             <div className="code-block">
-              <h4>Via Homebrew (Recommended)</h4>
-              <code>brew install paparazzi</code>
+              <h4>Via Cargo (Recommended)</h4>
+              <code>cargo install paparazzi</code>
             </div>
 
             <div className="code-block">
-              <h4>From Source</h4>
-              <code>git clone https://github.com/benodiwal/paparazzi.git<br/>cd paparazzi<br/>./install.sh</code>
+              <h4>From GitHub Releases</h4>
+              <code>curl -L https://github.com/benodiwal/paparazzi/releases/latest/download/paparazzi-aarch64-apple-darwin -o paparazzi<br/>chmod +x paparazzi<br/>sudo mv paparazzi /usr/local/bin/</code>
             </div>
           </section>
 
@@ -73,6 +67,30 @@ function Docs() {
                 <code>paparazzi hotkeys --list</code>
                 <p>Show current hotkey settings</p>
               </div>
+
+              <div className="command-item">
+                <h4>Stop Service</h4>
+                <code>paparazzi stop</code>
+                <p>Stop the background daemon</p>
+              </div>
+
+              <div className="command-item">
+                <h4>Check Status</h4>
+                <code>paparazzi status</code>
+                <p>Check daemon status and system info</p>
+              </div>
+
+              <div className="command-item">
+                <h4>View Logs</h4>
+                <code>paparazzi logs</code>
+                <p>View daemon logs and activity</p>
+              </div>
+
+              <div className="command-item">
+                <h4>Configure Logging</h4>
+                <code>paparazzi logging --level all</code>
+                <p>Set logging verbosity level</p>
+              </div>
             </div>
           </section>
 
@@ -102,6 +120,26 @@ function Docs() {
               <code>paparazzi hotkeys --modifiers "ctrl+shift" --key s</code>
               <code>paparazzi hotkeys --modifiers "cmd+alt" --key p</code>
               <code>paparazzi hotkeys --modifiers "ctrl+alt" --key space</code>
+            </div>
+
+            <h3>Logging Configuration</h3>
+            <p>Paparazzi provides configurable logging levels to control output verbosity:</p>
+
+            <h4>Available Log Levels</h4>
+            <ul>
+              <li><code>off</code> - No logging output</li>
+              <li><code>info</code> - Show only informational messages</li>
+              <li><code>success</code> - Show only success messages</li>
+              <li><code>error</code> - Show only error messages</li>
+              <li><code>warning</code> - Show only warning messages</li>
+              <li><code>all</code> - Show all log messages (default)</li>
+            </ul>
+
+            <h4>Logging Commands</h4>
+            <div className="code-block">
+              <code>paparazzi logging --level off       # Disable all logging</code>
+              <code>paparazzi logging --level success   # Only show success messages</code>
+              <code>paparazzi logging --show            # Show current log level</code>
             </div>
           </section>
 
@@ -201,7 +239,6 @@ function Docs() {
               <p>Show help information</p>
             </div>
           </section>
-          */}
         </div>
       </div>
     </div>

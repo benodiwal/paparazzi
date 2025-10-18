@@ -69,9 +69,10 @@ const AnimatedCommands = () => {
       'paparazzi run --background',
       'paparazzi hotkeys --list',
       'paparazzi hotkeys --modifiers "ctrl+shift" --key s',
-      'paparazzi version',
-      'paparazzi help',
-      'brew install paparazzi'
+      'paparazzi stop',
+      'paparazzi status',
+      'paparazzi logs',
+      'cargo install paparazzi'
     ]
 
     let charIndex = 0
@@ -308,6 +309,19 @@ function App() {
       section: 'How it Works',
       href: '#docs'
     },
+    // Installation methods
+    {
+      title: 'Install via Cargo',
+      content: 'cargo install paparazzi - recommended installation method',
+      section: 'Installation',
+      href: '#install'
+    },
+    {
+      title: 'Build from Source',
+      content: 'git clone and cargo build for custom installation',
+      section: 'Installation',
+      href: '#install'
+    },
     ...features.map(f => ({
       title: f.title,
       content: f.description as string,
@@ -366,11 +380,6 @@ function App() {
         />
       )}
       <div className="container">
-      <div className="coming-soon-banner">
-        <div className="banner-content">
-          <span className="banner-text">coming soon</span>
-        </div>
-      </div>
 
       <nav>
         <NavLink href="#home">home</NavLink>
@@ -412,88 +421,22 @@ function App() {
         <div className="left-column">
           <h1 id="install">installation</h1>
 
-          <div className="section blurred-section">
-            {/* Good try mate! 🕵️ But the CLI tool isn't ready yet. */}
-            {/* The real installation instructions will be here soon: */}
-            {/*
+          <div className="section">
             <Item
-              title="homebrew"
-              description={<code>brew install paparazzi</code>}
+              title="cargo (recommended)"
+              description={<code>cargo install paparazzi</code>}
             />
 
             <Item
               title="from source"
               description={
-                <code>
-                  git clone https://github.com/benodiwal/paparazzi.git
-                </code>
+                <div>
+                  <code>git clone https://github.com/benodiwal/paparazzi.git</code>
+                  <br />
+                  <code>cd paparazzi && cargo build --release</code>
+                </div>
               }
             />
-            */}
-            <div className="placeholder-content">
-              <p>Coming soon! 🚧</p>
-              <p>We're putting the finishing touches on the CLI tool.</p>
-            </div>
-          </div>
-
-          <h1 id="docs">usage</h1>
-
-          <div className="section blurred-section">
-            {/* Nice try! 👀 But these commands don't work yet. */}
-            {/* The real usage docs will be here when we launch: */}
-            {/*
-            <Item
-              title="start service"
-              description={
-                <>
-                  <code>paparazzi run</code>
-                  <div style={{ marginTop: '0.5rem', color: '#666', fontSize: '0.9rem' }}>
-                    starts the hotkey listener service
-                  </div>
-                </>
-              }
-            />
-
-            <Item
-              title="background mode"
-              description={
-                <>
-                  <code>paparazzi run --background</code>
-                  <div style={{ marginTop: '0.5rem', color: '#666', fontSize: '0.9rem' }}>
-                    runs the service in background mode
-                  </div>
-                </>
-              }
-            />
-
-            <Item
-              title="configure hotkeys"
-              description={
-                <>
-                  <code>paparazzi hotkeys --modifiers "ctrl+shift" --key s</code>
-                  <div style={{ marginTop: '0.5rem', color: '#666', fontSize: '0.9rem' }}>
-                    set custom keyboard shortcuts
-                  </div>
-                </>
-              }
-            />
-
-            <Item
-              title="view configuration"
-              description={
-                <>
-                  <code>paparazzi hotkeys --list</code>
-                  <div style={{ marginTop: '0.5rem', color: '#666', fontSize: '0.9rem' }}>
-                    show current hotkey settings
-                  </div>
-                </>
-              }
-            />
-            */}
-            <div className="placeholder-content">
-              <p>Documentation coming soon! 📚</p>
-              <p>The CLI tool is in active development.</p>
-            </div>
           </div>
 
           <h1>how it works</h1>
