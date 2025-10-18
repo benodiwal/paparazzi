@@ -6,6 +6,7 @@ authors = ["Sachin <sachinbeniwal0101@gmail.com>"]
 
 [dependencies]
 anyhow = "1.0.100"
+chrono = "0.4"
 clap = { version = "4.5.48", features = ["derive"] }
 crossbeam-channel = "0.5.15"
 daemonize = "0.5.0"

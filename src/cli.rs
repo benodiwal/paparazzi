@@ -45,6 +45,15 @@ pub enum Commands {
         #[arg(short, long)]
         list: bool,
     },
+    /// Configure logging settings
+    Logging {
+        /// Set log level (info, success, error, warning, all, off)
+        #[arg(short, long)]
+        level: Option<String>,
+        /// Show current logging configuration
+        #[arg(short, long)]
+        show: bool,
+    },
     /// Display version information
     Version,
 }

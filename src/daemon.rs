@@ -1,4 +1,5 @@
 use crate::constants::{PID_FILE, STDERR_FILE, STDOUT_FILE};
+use crate::logger;
 use anyhow::Result;
 use daemonize::Daemonize;
 use std::fs::{self, File};
@@ -37,7 +38,7 @@ impl Daemon {
     pub fn stop(&self) -> Result<()> {
         // First check if daemon is running
         if !self.is_running()? {
-            println!("No daemon is currently running");
+            logger::info("No daemon is currently running");
             return Ok(());
         }
 
@@ -55,7 +56,7 @@ impl Daemon {
 
         if !self.is_running()? {
             let _ = fs::remove_file(PID_FILE);
-            println!("Daemon stopped successfully");
+            logger::success("Daemon stopped successfully");
             Ok(())
         } else {
             anyhow::bail!("Failed to stop the daemon. It may require manual intervention.");

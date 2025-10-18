@@ -9,6 +9,7 @@ use winit::event_loop::{ControlFlow, EventLoop};
 mod cli;
 mod constants;
 mod daemon;
+mod logger;
 mod screenshot;
 mod terminal;
 
@@ -36,7 +37,7 @@ impl ApplicationHandler for App {
 
         if let Ok(event) = self.receiver.try_recv() {
             if event.state == global_hotkey::HotKeyState::Pressed {
-                println!("Hotkey pressed! Taking screenshot...");
+                logger::info("Hotkey pressed! Taking screenshot...");
                 if let Err(err) = handle_screenshot() {
                     eprintln!("Error: {}", err);
                 }
@@ -77,6 +78,9 @@ fn main() -> Result<()> {
         }) => {
             handle_hotkeys_command(modifiers, key, list, &daemon)?;
         }
+        Some(Commands::Logging { level, show }) => {
+            handle_logging_command(level, show)?;
+        }
         Some(Commands::Version) => {
             print_version();
         }
@@ -106,17 +110,17 @@ fn run_service_internal() -> Result<()> {
     let hotkey = HotKey::new(Some(config.modifiers()), config.key());
 
     manager.register(hotkey)?;
-    println!("Hotkey registered successfully");
+    logger::success("Hotkey registered successfully");
 
     let receiver = GlobalHotKeyEvent::receiver().to_owned();
     let mut app = App { receiver };
 
-    println!("Service is running...\n");
+    logger::info("Service is running...");
     event_loop.run_app(&mut app)?;
 
     // Cleanup
     manager.unregister(hotkey)?;
-    println!("\nService stopped");
+    logger::info("Service stopped");
 
     Ok(())
 }
@@ -158,7 +162,7 @@ fn handle_hotkeys_command(
         match HotkeyConfig::from_strings(&mod_str, &key_str) {
             Ok(config) => {
                 cli::save_hotkey_config(&config).map_err(|e| anyhow::anyhow!(e))?;
-                println!("Hotkey configuration updated!");
+                logger::success("Hotkey configuration updated!");
                 println!("   New hotkey: {}", config.to_string());
 
                 if daemon.is_running()? {
@@ -195,7 +199,61 @@ fn handle_hotkeys_command(
         println!();
         println!("Available keys:");
         println!("  a-z, 0-9, space, enter, tab, escape");
-        println!("\nBye :)\n");
+        println!("\nBye\n");
+    }
+
+    Ok(())
+}
+
+fn handle_logging_command(level: Option<String>, show: bool) -> Result<()> {
+    if show {
+        let current_level = logger::get_current_log_level();
+        println!("Current logging configuration:");
+        println!("   Level: {}", current_level);
+        return Ok(());
+    }
+
+    if let Some(level_str) = level {
+        let valid_levels = ["off", "info", "success", "error", "warning", "all"];
+
+        if !valid_levels.contains(&level_str.as_str()) {
+            eprintln!("Invalid log level: {}", level_str);
+            eprintln!("\nValid levels: {}", valid_levels.join(", "));
+            return Ok(());
+        }
+
+        logger::save_log_config(&level_str).map_err(|e| anyhow::anyhow!("Failed to save log config: {}", e))?;
+        println!("Log level updated to: {}", level_str);
+
+        match level_str.as_str() {
+            "off" => println!("   All logging is now disabled"),
+            "info" => println!("   Only INFO messages will be shown"),
+            "success" => println!("   Only SUCCESS messages will be shown"),
+            "error" => println!("   Only ERROR messages will be shown"),
+            "warning" => println!("   Only WARNING messages will be shown"),
+            "all" => println!("   All log messages will be shown"),
+            _ => {}
+        }
+    } else {
+        println!("Logging Configuration");
+        println!();
+        println!("Current level: {}", logger::get_current_log_level());
+        println!();
+        println!("To change the log level:");
+        println!("  clipse logging --level <level>");
+        println!();
+        println!("Available levels:");
+        println!("  off      - No logging");
+        println!("  info     - Show only info messages");
+        println!("  success  - Show only success messages");
+        println!("  error    - Show only error messages");
+        println!("  warning  - Show only warning messages");
+        println!("  all      - Show all messages (default)");
+        println!();
+        println!("Examples:");
+        println!("  clipse logging --level all");
+        println!("  clipse logging --level off");
+        println!("  clipse logging --show");
     }
 
     Ok(())
@@ -205,7 +263,7 @@ fn print_version() {
     println!("clipse {}", env!("CARGO_PKG_VERSION"));
     println!("A CLI tool for instant screenshots to Claude Code");
     println!();
-    println!("Built with Rust 🦀\n");
+    println!("Built with Rust\n");
 }
 
 fn print_intro() {
@@ -223,6 +281,9 @@ fn print_intro() {
     println!("  attach    Attach to running daemon (bring to foreground)");
     println!("    --follow, -f        Follow logs in real-time");
     println!("  hotkeys   Configure keyboard shortcuts");
+    println!("  logging   Configure logging settings");
+    println!("    --level, -l         Set log level (info, success, error, warning, all, off)");
+    println!("    --show, -s          Show current logging configuration");
     println!("  version   Display version information");
     println!("  help      Display this help message");
     println!();
@@ -239,14 +300,16 @@ fn print_intro() {
     println!("  clipse logs                                   # View daemon logs");
     println!("  clipse hotkeys --list                         # Show current hotkey");
     println!("  clipse hotkeys --modifiers \"ctrl+shift\" --key s  # Set new hotkey");
+    println!("  clipse logging --show                         # Show log level");
+    println!("  clipse logging --level off                    # Disable logging");
     println!();
     println!("For more information, visit: https://github.com/benodiwal/paparazzi");
-    println!("\n Bye :)\n");
+    println!("\n Bye\n");
 }
 
 fn handle_screenshot() -> Result<()> {
     let screenshot_path = screenshot::capture()?;
-    println!("Screenshot saved to: {}", screenshot_path);
+    logger::info(&format!("Screenshot saved to: {}", screenshot_path));
 
     let message = format!("{} Analyze this image", screenshot_path);
     terminal::send_to_claude_code_terminal(&message)?;

@@ -1,6 +1,7 @@
 use anyhow::Result;
 use std::process::Command;
 use std::path::{Path, PathBuf};
+use crate::logger;
 
 // Helper function to resolve script paths
 fn get_script_path(script_name: &str) -> PathBuf {
@@ -47,20 +48,20 @@ fn get_script_path(script_name: &str) -> PathBuf {
 #[cfg(target_os = "macos")]
 pub fn send_to_claude_code_terminal(message: &str) -> Result<()> {
     let pids = find_claude_code_processes()?;
-    println!("Found {} Claude Code processes: {:?}", pids.len(), pids);
+    logger::info(&format!("Found {} Claude Code processes: {:?}", pids.len(), pids));
 
     if send_to_iterm2_claude_tab(message).is_ok() {
-        println!("✅ Sent to Claude Code via iTerm2");
+        logger::success("Sent to Claude Code via iTerm2");
         return Ok(());
     }
 
     if send_to_terminal_app_claude_tab(message).is_ok() {
-        println!("✅ Sent to Claude Code via Terminal.app");
+        logger::success("Sent to Claude Code via Terminal.app");
         return Ok(());
     }
 
     if send_to_ghostty_claude_tab(message).is_ok() {
-        println!("✅ Sent to Claude Code via Ghostty");
+        logger::success("Sent to Claude Code via Ghostty");
         return Ok(());
     }
 
@@ -71,7 +72,7 @@ pub fn send_to_claude_code_terminal(message: &str) -> Result<()> {
             println!("TTY: {}", tty);
 
             if send_to_terminal_app_by_tty(&tty, message).is_ok() {
-                println!("✅ Sent via Terminal.app (TTY method)");
+                logger::success("Sent via Terminal.app (TTY method)");
                 return Ok(());
             }
         }
