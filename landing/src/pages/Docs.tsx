@@ -1,12 +1,274 @@
 import { Link } from 'react-router-dom'
+import { useState, useEffect } from 'react'
 import './Docs.css'
 
+interface SearchResult {
+  title: string
+  content: string
+  section: string
+  href: string
+}
+
+interface SearchModalProps {
+  isOpen: boolean
+  onClose: () => void
+  searchableContent: SearchResult[]
+}
+
+const SearchModal = ({ isOpen, onClose, searchableContent }: SearchModalProps) => {
+  const [searchTerm, setSearchTerm] = useState('')
+  const [results, setResults] = useState<SearchResult[]>([])
+
+  useEffect(() => {
+    if (!isOpen) {
+      setSearchTerm('')
+      setResults([])
+    }
+  }, [isOpen])
+
+  useEffect(() => {
+    if (searchTerm.trim()) {
+      const filtered = searchableContent.filter(item =>
+        item.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        item.content.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        item.section.toLowerCase().includes(searchTerm.toLowerCase())
+      )
+      setResults(filtered)
+    } else {
+      setResults([])
+    }
+  }, [searchTerm, searchableContent])
+
+  const handleResultClick = (href: string) => {
+    onClose()
+    const element = document.querySelector(href)
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    }
+  }
+
+  if (!isOpen) return null
+
+  return (
+    <div className="search-overlay" onClick={onClose}>
+      <div className="search-modal" onClick={(e) => e.stopPropagation()}>
+        <div className="search-header">
+          <input
+            type="text"
+            className="search-input"
+            placeholder="Search documentation..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            autoFocus
+          />
+          <button className="search-close" onClick={onClose}>
+            <span>ESC</span>
+          </button>
+        </div>
+        <div className="search-results">
+          {searchTerm && results.length === 0 && (
+            <div className="no-results">No results found for "{searchTerm}"</div>
+          )}
+          {results.map((result, index) => (
+            <div
+              key={index}
+              className="search-result-item"
+              onClick={() => handleResultClick(result.href)}
+            >
+              <div className="search-result-section">{result.section}</div>
+              <div className="search-result-title">{result.title}</div>
+              <div className="search-result-content">{result.content}</div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  )
+}
+
 function Docs() {
+  const [isSearchOpen, setIsSearchOpen] = useState(false)
+
+  // Prepare searchable content for docs
+  const searchableContent: SearchResult[] = [
+    // Getting Started
+    {
+      title: 'Prerequisites',
+      content: 'macOS, Claude Code installed and running, Terminal access',
+      section: 'Getting Started',
+      href: '#getting-started'
+    },
+    {
+      title: 'Install via Cargo',
+      content: 'cargo install paparazzi - recommended installation method',
+      section: 'Getting Started',
+      href: '#getting-started'
+    },
+    {
+      title: 'Install from GitHub Releases',
+      content: 'curl download for macOS Apple Silicon and Intel platforms',
+      section: 'Getting Started',
+      href: '#getting-started'
+    },
+    // Usage Commands
+    {
+      title: 'Start Service',
+      content: 'paparazzi run - starts the hotkey listener service',
+      section: 'Usage',
+      href: '#usage'
+    },
+    {
+      title: 'Background Mode',
+      content: 'paparazzi run --background - runs the service in background mode',
+      section: 'Usage',
+      href: '#usage'
+    },
+    {
+      title: 'Configure Hotkeys',
+      content: 'paparazzi hotkeys --modifiers ctrl+shift --key s - set custom keyboard shortcuts',
+      section: 'Usage',
+      href: '#usage'
+    },
+    {
+      title: 'View Configuration',
+      content: 'paparazzi hotkeys --list - show current hotkey settings',
+      section: 'Usage',
+      href: '#usage'
+    },
+    {
+      title: 'Stop Service',
+      content: 'paparazzi stop - stop the background daemon',
+      section: 'Usage',
+      href: '#usage'
+    },
+    {
+      title: 'Check Status',
+      content: 'paparazzi status - check daemon status and system info',
+      section: 'Usage',
+      href: '#usage'
+    },
+    {
+      title: 'View Logs',
+      content: 'paparazzi logs - view daemon logs and activity',
+      section: 'Usage',
+      href: '#usage'
+    },
+    {
+      title: 'Configure Logging',
+      content: 'paparazzi logging --level all - set logging verbosity level',
+      section: 'Usage',
+      href: '#usage'
+    },
+    // Configuration
+    {
+      title: 'Hotkey Modifiers',
+      content: 'ctrl, shift, alt, option, cmd, super - available modifier keys',
+      section: 'Configuration',
+      href: '#configuration'
+    },
+    {
+      title: 'Available Keys',
+      content: 'letters a-z, numbers 0-9, special keys space, enter, tab, escape',
+      section: 'Configuration',
+      href: '#configuration'
+    },
+    {
+      title: 'Log Levels',
+      content: 'off, info, success, error, warning, all - available logging levels',
+      section: 'Configuration',
+      href: '#configuration'
+    },
+    // How it Works
+    {
+      title: 'Core Graphics Integration',
+      content: 'uses native macOS screenshot APIs for optimal performance',
+      section: 'How it Works',
+      href: '#how-it-works'
+    },
+    {
+      title: 'Global Hotkey Manager',
+      content: 'registers system-wide keyboard shortcuts',
+      section: 'How it Works',
+      href: '#how-it-works'
+    },
+    {
+      title: 'IPC Communication',
+      content: 'communicates directly with Claude Code stdin',
+      section: 'How it Works',
+      href: '#how-it-works'
+    },
+    // Troubleshooting
+    {
+      title: 'Permission Issues',
+      content: 'screen recording permissions, System Preferences Security & Privacy',
+      section: 'Troubleshooting',
+      href: '#troubleshooting'
+    },
+    {
+      title: 'Hotkey Not Working',
+      content: 'check for conflicts, verify configuration, try different key combination',
+      section: 'Troubleshooting',
+      href: '#troubleshooting'
+    },
+    {
+      title: 'Claude Code Not Receiving Images',
+      content: 'ensure Claude Code is running, check terminal permissions',
+      section: 'Troubleshooting',
+      href: '#troubleshooting'
+    },
+    // API Reference
+    {
+      title: 'paparazzi run',
+      content: 'start the screenshot service with optional background mode',
+      section: 'API Reference',
+      href: '#api-reference'
+    },
+    {
+      title: 'paparazzi hotkeys',
+      content: 'configure keyboard shortcuts with modifiers and keys',
+      section: 'API Reference',
+      href: '#api-reference'
+    },
+    {
+      title: 'paparazzi version',
+      content: 'display version information',
+      section: 'API Reference',
+      href: '#api-reference'
+    },
+    {
+      title: 'paparazzi help',
+      content: 'show help information',
+      section: 'API Reference',
+      href: '#api-reference'
+    }
+  ]
+
+  // Keyboard shortcut handler
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+        e.preventDefault()
+        setIsSearchOpen(true)
+      }
+      if (e.key === 'Escape') {
+        setIsSearchOpen(false)
+      }
+    }
+
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [])
   return (
     <div className="docs-container">
       <nav className="docs-nav">
         <Link to="/" className="nav-link">← Back to Home</Link>
         <Link to="/blogs" className="nav-link">Blogs</Link>
+        <div className="nav-controls">
+          <div className="shortcuts" onClick={() => setIsSearchOpen(true)}>
+            <span className="shortcut">⌘</span>
+            <span className="shortcut">K</span>
+          </div>
+        </div>
       </nav>
 
       <div className="docs-content">
@@ -241,6 +503,11 @@ function Docs() {
           </section>
         </div>
       </div>
+      <SearchModal
+        isOpen={isSearchOpen}
+        onClose={() => setIsSearchOpen(false)}
+        searchableContent={searchableContent}
+      />
     </div>
   )
 }
