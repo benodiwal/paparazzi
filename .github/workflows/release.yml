@@ -11,6 +11,9 @@ on:
         required: true
         type: string
 
+permissions:
+  contents: write
+
 env:
   CARGO_TERM_COLOR: always
 
@@ -18,9 +21,6 @@ jobs:
   create-release:
     name: Create Release
     runs-on: ubuntu-latest
-    outputs:
-      release_id: ${{ steps.create_release.outputs.id }}
-      upload_url: ${{ steps.create_release.outputs.upload_url }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -36,56 +36,52 @@ jobs:
 
       - name: Create Release
         id: create_release
-        uses: actions/create-release@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tag_name: ${{ steps.get_tag.outputs.tag }}
-          release_name: Paparazzi ${{ steps.get_tag.outputs.tag }}
-          body: |
-            ## What's Changed
+        run: |
+          gh release create ${{ steps.get_tag.outputs.tag }} \
+            --title "Paparazzi ${{ steps.get_tag.outputs.tag }}" \
+            --notes "## What's Changed
 
-            ### Features
-            - New features and improvements
+          ### Features
+          - New features and improvements
 
-            ### Bug Fixes
-            - Bug fixes and stability improvements
+          ### Bug Fixes
+          - Bug fixes and stability improvements
 
-            ### Installation
+          ### Installation
 
-            #### Install via Cargo (Recommended)
-            ```bash
-            cargo install paparazzi
-            ```
+          #### Install via Cargo (Recommended)
+          \`\`\`bash
+          cargo install paparazzi
+          \`\`\`
 
-            #### Manual Installation
+          #### Manual Installation
 
-            ##### macOS (Apple Silicon)
-            ```bash
-            curl -L https://github.com/${{ github.repository }}/releases/download/${{ steps.get_tag.outputs.tag }}/paparazzi-aarch64-apple-darwin -o paparazzi
-            chmod +x paparazzi
-            sudo mv paparazzi /usr/local/bin/
-            ```
+          ##### macOS (Apple Silicon)
+          \`\`\`bash
+          curl -L https://github.com/${{ github.repository }}/releases/download/${{ steps.get_tag.outputs.tag }}/paparazzi-aarch64-apple-darwin -o paparazzi
+          chmod +x paparazzi
+          sudo mv paparazzi /usr/local/bin/
+          \`\`\`
 
-            ##### macOS (Intel)
-            ```bash
-            curl -L https://github.com/${{ github.repository }}/releases/download/${{ steps.get_tag.outputs.tag }}/paparazzi-x86_64-apple-darwin -o paparazzi
-            chmod +x paparazzi
-            sudo mv paparazzi /usr/local/bin/
-            ```
+          ##### macOS (Intel)
+          \`\`\`bash
+          curl -L https://github.com/${{ github.repository }}/releases/download/${{ steps.get_tag.outputs.tag }}/paparazzi-x86_64-apple-darwin -o paparazzi
+          chmod +x paparazzi
+          sudo mv paparazzi /usr/local/bin/
+          \`\`\`
 
-            ##### Linux
-            ```bash
-            curl -L https://github.com/${{ github.repository }}/releases/download/${{ steps.get_tag.outputs.tag }}/paparazzi-x86_64-unknown-linux-gnu -o paparazzi
-            chmod +x paparazzi
-            sudo mv paparazzi /usr/local/bin/
-            ```
+          ##### Linux
+          \`\`\`bash
+          curl -L https://github.com/${{ github.repository }}/releases/download/${{ steps.get_tag.outputs.tag }}/paparazzi-x86_64-unknown-linux-gnu -o paparazzi
+          chmod +x paparazzi
+          sudo mv paparazzi /usr/local/bin/
+          \`\`\`
 
-            **Note**: Linux binaries are provided for compatibility, but full functionality (screenshot integration) is only available on macOS.
+          **Note**: Linux binaries are provided for compatibility, but full functionality (screenshot integration) is only available on macOS.
 
-            **Full Changelog**: https://github.com/${{ github.repository }}/compare/...HEAD
-          draft: false
-          prerelease: false
+          **Full Changelog**: https://github.com/${{ github.repository }}/compare/...HEAD"
 
   build-and-upload:
     name: Build and Upload Release Assets
@@ -140,22 +136,20 @@ jobs:
           cp LICENSE release-package/ || true
           tar -czf paparazzi-${{ matrix.target }}.tar.gz -C release-package .
 
-      - name: Upload release asset
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ needs.create-release.outputs.upload_url }}
-          asset_path: ./paparazzi-${{ matrix.target }}.tar.gz
-          asset_name: paparazzi-${{ matrix.target }}.tar.gz
-          asset_content_type: application/gzip
+      - name: Get tag name
+        id: get_tag
+        run: |
+          if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
+            echo "tag=${{ github.event.inputs.tag }}" >> $GITHUB_OUTPUT
+          else
+            echo "tag=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
+          fi
 
-      - name: Upload binary directly (for easy download)
-        uses: actions/upload-release-asset@v1
+      - name: Upload release assets
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ needs.create-release.outputs.upload_url }}
-          asset_path: ./target/${{ matrix.target }}/release/paparazzi${{ matrix.suffix }}
-          asset_name: paparazzi-${{ matrix.target }}${{ matrix.suffix }}
-          asset_content_type: application/octet-stream
+        run: |
+          gh release upload ${{ steps.get_tag.outputs.tag }} \
+            "./paparazzi-${{ matrix.target }}.tar.gz" \
+            "./target/${{ matrix.target }}/release/paparazzi${{ matrix.suffix }}" \
+            --clobber
