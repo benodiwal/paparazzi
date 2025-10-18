@@ -1,9 +1,14 @@
-use crate::logger;
 use anyhow::Result;
+
+#[cfg(target_os = "macos")]
+use crate::logger;
+#[cfg(target_os = "macos")]
 use std::path::{Path, PathBuf};
+#[cfg(target_os = "macos")]
 use std::process::Command;
 
 // Helper function to resolve script paths
+#[cfg(target_os = "macos")]
 fn get_script_path(script_name: &str) -> PathBuf {
     let common_paths = [
         "/usr/local/share/clipse/macos/applescripts", // Installed location
@@ -194,25 +199,25 @@ fn send_to_ghostty_claude_tab(message: &str) -> Result<()> {
         if let Ok(terminal_name) = get_terminal_name_for_process(*pid)
             && terminal_name.to_lowercase().contains("ghostty")
         {
-                // Found Claude running in Ghostty, proceed with the script
-                let script_path = get_script_path("ghostty_send.applescript");
+            // Found Claude running in Ghostty, proceed with the script
+            let script_path = get_script_path("ghostty_send.applescript");
 
-                let output = Command::new("osascript")
-                    .arg(&script_path)
-                    .arg(message)
-                    .output()?;
+            let output = Command::new("osascript")
+                .arg(&script_path)
+                .arg(message)
+                .output()?;
 
-                if !output.status.success() {
-                    let error = String::from_utf8_lossy(&output.stderr);
-                    return Err(anyhow::anyhow!("Ghostty automation error: {}", error));
-                }
+            if !output.status.success() {
+                let error = String::from_utf8_lossy(&output.stderr);
+                return Err(anyhow::anyhow!("Ghostty automation error: {}", error));
+            }
 
-                let stdout = String::from_utf8_lossy(&output.stdout);
-                let result = stdout.trim();
+            let stdout = String::from_utf8_lossy(&output.stdout);
+            let result = stdout.trim();
 
-                if result == "true" {
-                    return Ok(());
-                }
+            if result == "true" {
+                return Ok(());
+            }
         }
     }
 
@@ -270,4 +275,11 @@ fn send_to_terminal_app_by_tty(tty: &str, message: &str) -> Result<()> {
     }
 
     Ok(())
+}
+
+#[cfg(not(target_os = "macos"))]
+pub fn send_to_claude_code_terminal(_message: &str) -> Result<()> {
+    Err(anyhow::anyhow!(
+        "Terminal integration is only supported on macOS"
+    ))
 }

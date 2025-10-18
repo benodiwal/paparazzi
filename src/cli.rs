@@ -100,7 +100,6 @@ impl HotkeyConfig {
         Ok(())
     }
 
-
     pub fn modifiers(&self) -> Modifiers {
         self.modifiers_parsed
             .unwrap_or(Modifiers::CONTROL | Modifiers::SHIFT)
