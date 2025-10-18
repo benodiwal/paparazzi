@@ -241,28 +241,6 @@ cargo fmt
 cargo clippy
 ```
 
-### Project Structure
-
-```
-paparazzi/
-├── src/
-│   ├── main.rs              # Entry point
-│   ├── cli.rs               # Command line interface
-│   ├── daemon.rs            # Background service management
-│   ├── hotkey.rs            # Global hotkey handling
-│   ├── screenshot.rs        # Screenshot capture logic
-│   ├── terminal.rs          # Claude Code terminal integration
-│   ├── logger.rs            # Logging system
-│   └── config.rs            # Configuration management
-├── macos/
-│   └── applescripts/        # AppleScript files for terminal integration
-├── landing/                 # Landing page website
-├── .github/
-│   └── workflows/           # CI/CD workflows
-├── Cargo.toml
-└── README.md
-```
-
 ## Contributing
 
 Contributions are welcome! Please feel free to submit a Pull Request. For major changes, please open an issue first to discuss what you would like to change.
