@@ -285,4 +285,4 @@ If you encounter any issues or have questions:
 
 ---
 
-For more detailed documentation, visit our [documentation site](https://paparazzi.dev/docs).
+For more detailed documentation, visit our [documentation site](https://www.paparazziforclaude.com/docs).
