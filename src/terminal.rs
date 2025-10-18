@@ -1,5 +1,48 @@
 use anyhow::Result;
 use std::process::Command;
+use std::path::{Path, PathBuf};
+
+// Helper function to resolve script paths
+fn get_script_path(script_name: &str) -> PathBuf {
+    let common_paths = [
+        "/usr/local/share/clipse/macos/applescripts",       // Installed location
+        "/opt/clipse/macos/applescripts",                   // Alternative install
+    ];
+
+    for base in &common_paths {
+        let path = Path::new(base).join(script_name);
+        if path.exists() {
+            return path;
+        }
+    }
+
+    if let Ok(exe_path) = std::env::current_exe() {
+        // For daemon mode, the executable might be in target/debug or target/release
+        // We need to go up to find the project root
+        let mut current = exe_path.as_path();
+
+        for _ in 0..5 {
+            let script_path = current.join("macos/applescripts").join(script_name);
+            if script_path.exists() {
+                return script_path;
+            }
+
+            if let Some(parent) = current.parent() {
+                current = parent;
+            } else {
+                break;
+            }
+        }
+    }
+
+    let fallback = Path::new("macos/applescripts").join(script_name);
+
+    if !fallback.exists() {
+        Path::new("/Users/sachin/personal/clipse/macos/applescripts").join(script_name)
+    } else {
+        fallback
+    }
+}
 
 #[cfg(target_os = "macos")]
 pub fn send_to_claude_code_terminal(message: &str) -> Result<()> {
@@ -81,13 +124,13 @@ fn find_terminal_for_process(pid: i32) -> Result<String> {
     Ok(full_tty)
 }
 
-// iTerm2 - Find and switch to Claude Code tab
+// iTerm2
 #[cfg(target_os = "macos")]
 fn send_to_iterm2_claude_tab(message: &str) -> Result<()> {
-    let script_path = "macos/applescripts/iterm2_send.applescript";
+    let script_path = get_script_path("iterm2_send.applescript");
 
     let output = Command::new("osascript")
-        .arg(script_path)
+        .arg(&script_path)
         .arg(message)
         .output()?;
 
@@ -106,13 +149,13 @@ fn send_to_iterm2_claude_tab(message: &str) -> Result<()> {
     Ok(())
 }
 
-// Terminal.app - Find and switch to Claude Code tab
+// Terminal.app
 #[cfg(target_os = "macos")]
 fn send_to_terminal_app_claude_tab(message: &str) -> Result<()> {
-    let script_path = "macos/applescripts/terminal_send.applescript";
+    let script_path = get_script_path("terminal_send.applescript");
 
     let output = Command::new("osascript")
-        .arg(script_path)
+        .arg(&script_path)
         .arg(message)
         .output()?;
 
@@ -142,10 +185,10 @@ fn send_to_ghostty_claude_tab(message: &str) -> Result<()> {
         if let Ok(terminal_name) = get_terminal_name_for_process(*pid) {
             if terminal_name.to_lowercase().contains("ghostty") {
                 // Found Claude running in Ghostty, proceed with the script
-                let script_path = "macos/applescripts/ghostty_send.applescript";
+                let script_path = get_script_path("ghostty_send.applescript");
 
                 let output = Command::new("osascript")
-                    .arg(script_path)
+                    .arg(&script_path)
                     .arg(message)
                     .output()?;
 
@@ -197,10 +240,10 @@ fn get_terminal_name_for_process(pid: i32) -> Result<String> {
 // Terminal.app
 #[cfg(target_os = "macos")]
 fn send_to_terminal_app_by_tty(tty: &str, message: &str) -> Result<()> {
-    let script_path = "macos/applescripts/terminal_tty_send.applescript";
+    let script_path = get_script_path("terminal_tty_send.applescript");
 
     let output = Command::new("osascript")
-        .arg(script_path)
+        .arg(&script_path)
         .arg(tty)
         .arg(message)
         .output()?;
