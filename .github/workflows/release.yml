@@ -81,8 +81,7 @@ jobs:
             sudo mv clipse /usr/local/bin/
             ```
 
-            ##### Windows
-            Download the `clipse-x86_64-pc-windows-msvc.exe` file and add it to your PATH.
+            **Note**: Linux binaries are provided for compatibility, but full functionality (screenshot integration) is only available on macOS.
 
             **Full Changelog**: https://github.com/${{ github.repository }}/compare/...HEAD
           draft: false
@@ -107,10 +106,6 @@ jobs:
             target: aarch64-apple-darwin
             suffix: ""
             name: "macOS Apple Silicon"
-          - os: windows-latest
-            target: x86_64-pc-windows-msvc
-            suffix: ".exe"
-            name: "Windows x86_64"
 
     steps:
       - name: Checkout code
@@ -137,8 +132,7 @@ jobs:
       - name: Build release binary
         run: cargo build --release --target ${{ matrix.target }}
 
-      - name: Create release package (Unix)
-        if: matrix.os != 'windows-latest'
+      - name: Create release package
         run: |
           mkdir -p release-package
           cp target/${{ matrix.target }}/release/clipse${{ matrix.suffix }} release-package/
@@ -146,17 +140,7 @@ jobs:
           cp LICENSE release-package/ || true
           tar -czf clipse-${{ matrix.target }}.tar.gz -C release-package .
 
-      - name: Create release package (Windows)
-        if: matrix.os == 'windows-latest'
-        run: |
-          mkdir release-package
-          copy target\${{ matrix.target }}\release\clipse${{ matrix.suffix }} release-package\
-          copy README.md release-package\ || true
-          copy LICENSE release-package\ || true
-          7z a clipse-${{ matrix.target }}.zip release-package\*
-
-      - name: Upload release asset (Unix)
-        if: matrix.os != 'windows-latest'
+      - name: Upload release asset
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -165,17 +149,6 @@ jobs:
           asset_path: ./clipse-${{ matrix.target }}.tar.gz
           asset_name: clipse-${{ matrix.target }}.tar.gz
           asset_content_type: application/gzip
-
-      - name: Upload release asset (Windows)
-        if: matrix.os == 'windows-latest'
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ needs.create-release.outputs.upload_url }}
-          asset_path: ./clipse-${{ matrix.target }}.zip
-          asset_name: clipse-${{ matrix.target }}.zip
-          asset_content_type: application/zip
 
       - name: Upload binary directly (for easy download)
         uses: actions/upload-release-asset@v1

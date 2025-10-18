@@ -11,7 +11,7 @@ This repository contains several GitHub Actions workflows for CI/CD automation.
 
 **Jobs:**
 - **Test Suite**: Runs tests, formatting checks, and Clippy linting
-- **Build**: Cross-platform builds for Linux, macOS (Intel & Apple Silicon), and Windows
+- **Build**: Cross-platform builds for Linux and macOS (Intel & Apple Silicon)
 - **Security Audit**: Runs `cargo audit` to check for security vulnerabilities
 
 **Artifacts:** Pre-built binaries for all supported platforms
@@ -36,7 +36,7 @@ This repository contains several GitHub Actions workflows for CI/CD automation.
 
 **Jobs:**
 - **Create Release**: Creates GitHub release with Cargo and manual installation instructions
-- **Build and Upload**: Cross-platform binary builds and asset uploads
+- **Build and Upload**: macOS and Linux binary builds and asset uploads
 
 ## Required Secrets
 
@@ -119,7 +119,7 @@ cargo publish
 ## Workflow Customization
 
 ### Adding New Platforms
-Edit the matrix in `cli.yml` and `release.yml`:
+Edit the matrix in `cli.yml` and `release.yml`. Note that full functionality requires macOS:
 
 ```yaml
 matrix:
@@ -128,6 +128,8 @@ matrix:
       target: aarch64-unknown-linux-gnu  # ARM Linux
       suffix: ""
 ```
+
+**Note**: While you can add other platforms, screenshot integration only works on macOS due to the use of `screencapture` and AppleScript.
 
 ### Changing Vercel Settings
 Update the Vercel action parameters in `landing.yml` or modify vercel.json configuration.

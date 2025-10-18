@@ -70,9 +70,6 @@ jobs:
           - os: macos-latest
             target: aarch64-apple-darwin
             suffix: ""
-          - os: windows-latest
-            target: x86_64-pc-windows-msvc
-            suffix: ".exe"
 
     steps:
       - name: Checkout code
@@ -102,13 +99,8 @@ jobs:
       - name: Create artifact directory
         run: mkdir -p artifacts
 
-      - name: Copy binary (Unix)
-        if: matrix.os != 'windows-latest'
+      - name: Copy binary
         run: cp target/${{ matrix.target }}/release/clipse${{ matrix.suffix }} artifacts/clipse-${{ matrix.target }}${{ matrix.suffix }}
-
-      - name: Copy binary (Windows)
-        if: matrix.os == 'windows-latest'
-        run: copy target\${{ matrix.target }}\release\clipse${{ matrix.suffix }} artifacts\clipse-${{ matrix.target }}${{ matrix.suffix }}
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
